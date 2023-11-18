@@ -1,21 +1,33 @@
+from functools import partial
 import os
 from pprint import pprint
 
 import agci
-import shpat_commands
-from shpat.hierarchy import StaticKBHierarchy
-from shpat.knowledge_base import KnowledgeBase
-
-from agent.entity import Entity
+import src.shpat_commands
+from src.knowledge_base import KnowledgeBase
+from src.instance import Instance
 from src.state_manager import StageManager
+from src.helpers import find_associated_task
 
-IT_ENTITY = None
+from shpat.hierarchy import StaticKBHierarchy
 
 
 def parse(text, debug=False):
-    structure = shpat_commands.parse(text, debug=debug)
-    entity = Entity.from_dict(structure)
-    return entity
+    # Work in progress
+    structure = src.shpat_commands.parse(text, debug=debug)
+    return Instance.from_dict(structure)
+
+
+def run(text, kb, interpreter: agci.Interpreter):
+    instance = parse(text, debug=True)
+    run_action(instance, kb, interpreter)
+
+
+def run_action(instance, kb, interpreter: agci.Interpreter):
+    func_name, new_instance = find_associated_task(kb, instance)
+    interpreter.run_function(func_name, {
+        **new_instance.fields
+    })
 
 
 def get_interpreter():
@@ -35,6 +47,7 @@ def get_interpreter():
         'hierarchy': hierarchy,
         'set': set,
         'isinstance': isinstance,
+        'Instance': Instance,
         'None': None,
         'max': max,
         'min': min,
@@ -43,10 +56,11 @@ def get_interpreter():
         'exit': exit,
         'Exception': Exception,
     })
+    interpreter.global_vars['run'] = partial(run, kb=kb, interpreter=interpreter)
+    interpreter.global_vars['run_action'] = partial(run_action, kb=kb, interpreter=interpreter)
 
-    interpreter.load_file("agent_code/core.ipy")
-    interpreter.load_file("agent_code/number.py")
-    interpreter.load_file("agent_code/string.py")
+    interpreter.load_file("agent_code/core.py")
+    interpreter.load_file("agent_code/constants.py")
     interpreter.load_file("agent_code/evaluate.py")
     interpreter.load_file("agent_code/file_system.py")
     
