@@ -7,7 +7,7 @@ from src.interfaces.base_knowledge_base import KBEdgeType
 import src.shpat_commands
 from src.knowledge_base import KnowledgeBase
 from src.instance import Instance
-from src.state_manager_new import ReferenceManager
+from src.state_manager import ReferenceManager
 from src.helpers import find_associated_task
 
 
