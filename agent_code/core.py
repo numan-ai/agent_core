@@ -1,17 +1,17 @@
 def main():    
     run("print 123")
-    run_action(Instance("ActOnEntity", {
-        "act": Instance("RemoveAct", {}),
-        "entity": Instance("File", {
-            "path": Instance("FileSystemPath", {
-                "value": "main.txt",
-            }),
-        }),
-    }))
+    # run_action(Instance("ActOnEntity", {
+    #     "act": Instance("RemoveAct", {}),
+    #     "entity": Instance("File", {
+    #         "path": Instance("FileSystemPath", {
+    #             "value": "main.txt",
+    #         }),
+    #     }),
+    # }))
 
 
 def print_constant():
-    constant = the("the constant")
+    constant = resolve("the constant")
     print(get_field(constant, 'value'))
 
 

@@ -163,10 +163,29 @@ def iterate_specified_children(kb, concept: Concept):
         fill_missing_concept_fields(kb, child_concept)
         
         for field_name, field_value in child_concept.fields.items():
-            if not is_child_of(kb, field_value, concept.fields[field_name]):
+            if not is_child_of(kb, concept.fields[field_name], field_value):
                 break
         else:
             yield child
+
+
+def is_instance_of(kb: BaseKnowledgeBase, instance_concept: Concept, class_concept: Concept) -> bool:
+    child_kb_node = kb.find_concept(instance_concept.get_cid())
+    
+    classes = kb.out(child_kb_node.id, KBEdgeType.CLASS)
+    
+    for _class in classes:
+        if _class.data['name'] == class_concept.name:
+            return True
+    
+    for parent in iterate_hierarchy(kb, child_kb_node):
+        classes = kb.out(parent.id, KBEdgeType.CLASS)
+        
+        for _class in classes:
+            if _class.data['name'] == class_concept.name:
+                return True
+            
+    return False
 
 
 def is_child_of(kb: BaseKnowledgeBase, child_concept: Concept, parent_concept: Concept) -> bool:
@@ -179,13 +198,12 @@ def is_child_of(kb: BaseKnowledgeBase, child_concept: Concept, parent_concept: C
     fill_missing_concept_fields(kb, child_concept)
     fill_missing_concept_fields(kb, parent_concept)
     
-    if not child_concept.fields and not parent_concept.fields:
-        return child_concept.name == parent_concept.name
+    child_kb_node = kb.find_concept(child_concept.get_cid())
     
     if child_concept.name == parent_concept.name:
+        # TODO: handle the case where cids are different,
+        # like when field value is a child
         return child_concept.get_cid() == parent_concept.get_cid()
-    
-    child_kb_node = kb.find_concept(child_concept.get_cid())
     
     for parent in iterate_hierarchy(kb, child_kb_node):
         if parent.data['name'] == parent_concept.name:

@@ -1,16 +1,3 @@
-def get_field(entity, field_name):
-    if field_name not in entity.fields:
-        print('Field not found: ' + field_name)
-        concept = kb.find_concept(Concept.from_uid(entity.concept).name)
-        fields = kb.out(concept.id, 'fields')
-        fex_task_name = 'fex_Number_value_from_digits'
-        fex_task = __agci.ctx[-1].variables[fex_task_name]
-        print('Field triggered fex function: ' + fex_task_name)
-        value = fex_task(entity)
-        entity.fields[field_name] = value
-    return entity.fields[field_name]
-
-
 # def get_field(entity, field_name):
 #     if field_name not in entity.fields:
 #         print('Field not found: ' + field_name)

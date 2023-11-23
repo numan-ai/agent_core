@@ -88,11 +88,3 @@ class KnowledgeBase(BaseKnowledgeBase):
         ]
 
         return results
-
-
-# replace Concept-associated->Task with Concept-task->Task
-db.cypher_query("""
-MATCH (a:Concept)-[r:associated]->(b:Task)
-DELETE r
-CREATE (a)-[:task]->(b)
-""")

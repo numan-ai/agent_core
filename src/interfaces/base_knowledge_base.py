@@ -16,6 +16,8 @@ class KBEdgeType(enum.Enum):
     FIELD_NODE = "fields"
     # Concept -> Task
     TASK = "task"
+    # Field -> Task
+    FEX_OUT = "fex_out"
     
     
 class KBNodeType(enum.Enum):

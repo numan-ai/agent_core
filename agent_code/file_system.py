@@ -1,21 +1,21 @@
 def create_file(object):
-    filename = the("file name")
+    filename = resolve("file name")
     filename_value = get_field(filename, 'value')
     
     print(">>> touch " + filename_value)
 
 
 def create_folder(object):
-    filename = the("name")
+    filename = resolve("name")
     filename_value = get_field(filename, 'value')
     
     print(">>> mkdir " + filename_value)
 
 
 def delete_file(object):
-    file = the("the file")
+    file = resolve("the file")
     print(file.fields)
-    filename = the("file name")
+    filename = resolve("file name")
     filename_value = get_field(filename, 'value')
     
     print(">>> rm " + filename_value)
