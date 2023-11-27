@@ -3,12 +3,12 @@ from shpat.hierarchy import StaticKBHierarchy
 from shpat.knowledge_base import KnowledgeBase
 from shpat.presets.commands_v6 import PATTERNS
 from shpat.presets.syntactic_extractor_v6 import SyntacticExtractor
-from src.state_manager import StageManager
+from src.state_manager import ReferenceManager
 
 kb = KnowledgeBase()
 hierarchy = StaticKBHierarchy(kb)
 hierarchy.prefetch()
-sm = StageManager(kb, hierarchy)
+sm = ReferenceManager(kb)
 
 
 def parse(text, debug=False):

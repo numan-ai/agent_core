@@ -82,7 +82,7 @@ class KnowledgeBase(BaseKnowledgeBase):
         results, columns = db.cypher_query(
             f"""MATCH (a:Concept)-[:outcome]->(b:Outcome)-[:act]->(c:Concept) WHERE id(c)={int(node_id)} RETURN a, b""")
 
-        results = [ 
+        results = [
             (KBNode.create(row[0]), KBNode.create(row[1]))
             for row in results
         ]
