@@ -24,8 +24,13 @@ def run(text, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
 
 def resolve(text, stage_manager: ReferenceManager):
     instance = parse(text, debug=True)
-    result = stage_manager.find(instance)
+    result = resolve_instance(instance, stage_manager=stage_manager)
     print(f"Resolved \"{text}\" to:", result)
+    return result
+
+
+def resolve_instance(instance, stage_manager: ReferenceManager):
+    result = stage_manager.find(instance)
     return result
 
 
@@ -93,11 +98,11 @@ def get_interpreter():
     interpreter.global_vars['run'] = partial(run, kb=kb, interpreter=interpreter, sm=sm)
     interpreter.global_vars['run_action'] = partial(run_action, kb=kb, interpreter=interpreter, sm=sm)
     interpreter.global_vars['resolve'] = partial(resolve, stage_manager=sm)
+    interpreter.global_vars['resolve_instance'] = partial(resolve_instance, stage_manager=sm)
     interpreter.global_vars['get_field'] = partial(get_field, kb=kb, interpreter=interpreter)
 
     interpreter.load_file("agent_code/core.py")
     interpreter.load_file("agent_code/constants.py")
-    interpreter.load_file("agent_code/evaluate.py")
     interpreter.load_file("agent_code/file_system.py")
     
     return interpreter

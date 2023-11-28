@@ -1,5 +1,5 @@
 def main():    
-    run("print 123")
+    run("print 123 + 43")
     # run_action(Instance("ActOnEntity", {
     #     "act": Instance("RemoveAct", {}),
     #     "entity": Instance("File", {
@@ -20,42 +20,42 @@ def print_expression():
     print(value)
 
 
-def evaluate_binary_math_expression_plus(object):
+def evaluate_binary_math_expression_plus():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left + right
     return result
 
 
-def evaluate_binary_math_expression_minus(object):
+def evaluate_binary_math_expression_minus():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left - right
     return result
 
 
-def evaluate_binary_math_expression_multiply(object):
+def evaluate_binary_math_expression_multiply():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left * right
     return result
 
 
-def evaluate_binary_math_expression_divide(object):
+def evaluate_binary_math_expression_divide():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left / right
     return result
 
 
-def evaluate_greater_comparison_expression(object):
+def evaluate_greater_comparison_expression():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left > right
     return result
 
 
-def evaluate_less_comparison_expression(object):
+def evaluate_less_comparison_expression():
     left = run('evaluate the left expression')
     right = run('evaluate the right expression')
     result = left < right
@@ -118,3 +118,16 @@ def run_rm_command(entity):
 def run_conditional_action():
     if run("evaluate the condition"):
         run("run the action")
+
+
+def run_action_on_entity_reference():
+    reference = resolve("the reference")
+    instance = resolve_instance(reference)
+    
+    this_act = resolve("the act")
+    act = get_field(this_act, 'act')
+    
+    run_action(Instance("ActOnEntity", {
+        "act": act,
+        "entity": instance,
+    }))
