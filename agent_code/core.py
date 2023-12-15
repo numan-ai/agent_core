@@ -1,6 +1,9 @@
 def main():    
-    run("print 123 + 43")
-    # run_action(Instance("ActOnEntity", {
+    run("print 123", by_user=True)
+    # run("please don't remove any python files")
+    
+    # run("Hannah has an apple")
+    # run_instance(Instance("ActOnEntity", {
     #     "act": Instance("RemoveAct", {}),
     #     "entity": Instance("File", {
     #         "path": Instance("FileSystemPath", {
@@ -8,6 +11,30 @@ def main():
     #         }),
     #     }),
     # }))
+    
+    # run_instance(Instance("SimpleStatement", {
+    #     "subject": Instance("DefiniteEntityReferenceByName", {
+    #         "name": Instance("Name", {
+    #             "value": "Hannah",
+    #         })
+    #     }),
+    #     "act": Instance("HasAct"),
+    #     "direct_object": Instance("IndefiniteEntityReference", {
+    #         "concept": Instance("Concept", {
+    #             "value": "AppleClass",
+    #         }),
+    #     }),
+    # }))
+    
+    
+def react_to_imperative():
+    run("process the imperative")
+    
+    
+def process_simple_statement():
+    subject = resolve("the subject")
+    act = resolve("the act")
+    direct_object = resolve("the direct object")
 
 
 def print_constant():
@@ -66,36 +93,18 @@ def evaluate_constant(object):
     return get_field(object, 'value')
 
 
-def process_user_imperative(user_says):
-    # action = run("find the action of the imperative")
-    
-    action = run_action(Instance("ActionWithExtension", {
-        "action": Instance("ActionOnEntityReference", {
-            "action": Instance("FindActionInstance"),
-            "entity": Instance("DefiniteEntityReference", {
-                "referent": Instance("Concept", {
-                    "name": "Action",
-                })
-            })
-        }),
-        "extension": Instance("ExtensionOf", {
-            "of": Instance("DefiniteEntityReference", {
-                "referent": Instance("Concept", {
-                    "name": "Imperative",
-                })
-            })
-        })
-    }))
-    
-    run_action(action)
+def process_imperative():
+    imperative = resolve("the imperative")
+    action = get_field(imperative, 'act')
+    run_instance(action)
 
 
 def run_action_pair():
     first_action = run("the first action")
     second_action = run("the second action")
     
-    run_action(first_action)
-    run_action(second_action)
+    run_instance(first_action)
+    run_instance(second_action)
 
 
 def remove_file():
@@ -127,7 +136,12 @@ def run_action_on_entity_reference():
     this_act = resolve("the act")
     act = get_field(this_act, 'act')
     
-    run_action(Instance("ActOnEntity", {
+    print('\n\n---')
+    print(act)
+    print(instance)
+    print('---\n\n')
+    
+    run_instance(Instance("ActOnEntity", {
         "act": act,
         "entity": instance,
     }))

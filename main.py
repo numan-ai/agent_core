@@ -3,27 +3,35 @@ import os
 from pprint import pprint
 
 import agci
+from src.concept import Concept
 from src.interfaces.base_knowledge_base import KBEdgeType
 import src.shpat_commands
 from src.knowledge_base import KnowledgeBase
 from src.instance import Instance
-from src.state_manager import ReferenceManager
-from src.helpers import find_associated_task
+from src.reference_manager import ReferenceManager
+from src.helpers import find_associated_task, is_child_of
+from src.world_model.world_model import WorldModel
 
 
-def parse(text, debug=False):
-    # Work in progress
-    structure = src.shpat_commands.parse(text, debug=debug)
+wm = WorldModel(None, None)
+
+
+def parse(text, sm, debug=False):
+    structure = src.shpat_commands.parse(text, sm, debug=debug)
     return Instance.from_dict(structure['name'], structure['data'])
 
 
-def run(text, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
-    instance = parse(text, debug=True)
-    return run_action(instance, kb, interpreter, sm=sm)
+def run(text, by_user, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
+    instance = parse(text, sm, debug=True)
+    
+    if not by_user and instance.concept_name == 'Imperative':
+        instance = instance.fields['act']
+    
+    return run_instance(instance, kb, interpreter, sm=sm)
 
 
 def resolve(text, stage_manager: ReferenceManager):
-    instance = parse(text, debug=True)
+    instance = parse(text, stage_manager, debug=False)
     result = resolve_instance(instance, stage_manager=stage_manager)
     print(f"Resolved \"{text}\" to:", result)
     return result
@@ -59,22 +67,28 @@ def get_field(entity, field_name, kb: KnowledgeBase, interpreter: agci.Interpret
     return entity.fields[field_name]
 
 
-def run_action(instance, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
+def run_instance(trigger_instance: Instance, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
     sm.push_context()
-    sm.save(instance)
-    func_name, new_instance = find_associated_task(kb, instance)
+    sm.save(trigger_instance)
+    func_name, new_instance = find_associated_task(kb, trigger_instance)
+    
+    is_act = is_child_of(kb, trigger_instance.get_concept(), Concept('Act'))
+    
+    if is_act:
+        wm.action_history.push(new_instance)
     result = interpreter.run_function(func_name, {
         **new_instance.fields
     })
+    if is_act:
+        wm.action_history.pop()
     sm.pop_context()
     return result
-    
 
 
 def get_interpreter():
     kb = KnowledgeBase()
 
-    sm = ReferenceManager(kb)
+    sm = ReferenceManager(kb, parse)
     
     interpreter = agci.Interpreter({
         'list': list,
@@ -95,8 +109,8 @@ def get_interpreter():
         'exit': exit,
         'Exception': Exception,
     })
-    interpreter.global_vars['run'] = partial(run, kb=kb, interpreter=interpreter, sm=sm)
-    interpreter.global_vars['run_action'] = partial(run_action, kb=kb, interpreter=interpreter, sm=sm)
+    interpreter.global_vars['run'] = partial(run, by_user=False, kb=kb, interpreter=interpreter, sm=sm)
+    interpreter.global_vars['run_instance'] = partial(run_instance, kb=kb, interpreter=interpreter, sm=sm)
     interpreter.global_vars['resolve'] = partial(resolve, stage_manager=sm)
     interpreter.global_vars['resolve_instance'] = partial(resolve_instance, stage_manager=sm)
     interpreter.global_vars['get_field'] = partial(get_field, kb=kb, interpreter=interpreter)
@@ -111,6 +125,8 @@ def get_interpreter():
 def main():
     interpreter = get_interpreter()
     interpreter.run_main()
+    breakpoint()
+    pass
 
 
 if __name__ == '__main__':

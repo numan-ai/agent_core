@@ -88,3 +88,10 @@ class KnowledgeBase(BaseKnowledgeBase):
         ]
 
         return results
+    
+    @functools.cache
+    def get_word(self, word: str):
+        results, columns = db.cypher_query(
+            f"""MATCH (a:Word {{name: '{word}'}}) RETURN a""")
+
+        return KBNode.create(results[0][0])

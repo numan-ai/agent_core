@@ -4,7 +4,7 @@ def fex_Number_value_from_digits(entity):
     for digit in get_field(entity, 'digits'):
         digits.append(str(get_field(digit, 'value')))
     
-    print(digits)
+    # print(digits)
     return int(''.join(digits))
 
 

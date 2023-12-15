@@ -7,9 +7,10 @@ from src.knowledge_base import KnowledgeBase
 
 
 class StageManagerContext:
-    def __init__(self):
+    def __init__(self, parse_func=None):
         self.objects = []
         self.text_to_object = weakref.WeakValueDictionary()
+        self.parse_func = parse_func
 
     def _get_description_word_associations(self, kb: KnowledgeBase, word) -> list[str]:
         word_node = kb.find_word(word)
@@ -21,6 +22,13 @@ class StageManagerContext:
             association.data['name']
             for association in associations
         ]
+        
+    def _check_key_matches(self, key: str, obj):
+        try:
+            parsed_key = self.parse_func(key, self)
+        except ValueError:
+            return False
+        return parsed_key.concept_name == obj.concept_name
 
     def _check_object_matches(self, kb, obj: Instance, sub_obj: Instance, description=None): 
         obj_con = obj.get_concept()
@@ -36,9 +44,12 @@ class StageManagerContext:
             obj = obj.fields['object']
 
         for key, sub_value in sub_obj.fields.items():
-            if description is not None:
+            if self._check_key_matches(key, obj):
+                return sub_value
+            
+                        
+            if description is not None:   
                 associations = self._get_description_word_associations(kb, key)
-                
                 if description.concept_name in associations:
                     # description was resolved, setting it to None
                     description = None
@@ -65,14 +76,15 @@ class StageManagerContext:
 
 
 class ReferenceManager:
-    def __init__(self, kb: KnowledgeBase):
+    def __init__(self, kb: KnowledgeBase, parse_func):
         self.kb = kb
         self.contexts: list[StageManagerContext] = [
             StageManagerContext()
         ]
+        self.parse_func = parse_func
 
     def push_context(self):
-        self.contexts.append(StageManagerContext())
+        self.contexts.append(StageManagerContext(self.parse_func))
 
     def pop_context(self):
         self.contexts.pop()

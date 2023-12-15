@@ -201,9 +201,16 @@ def is_child_of(kb: BaseKnowledgeBase, child_concept: Concept, parent_concept: C
     child_kb_node = kb.find_concept(child_concept.get_cid())
     
     if child_concept.name == parent_concept.name:
-        # TODO: handle the case where cids are different,
-        # like when field value is a child
-        return child_concept.get_cid() == parent_concept.get_cid()
+        if child_concept.get_cid() == parent_concept.get_cid():
+            return True
+        
+        for field_name, field_value in child_concept.fields.items():
+            if not is_child_of(kb, field_value, parent_concept.fields[field_name]):
+                break
+        else:
+            return True
+        
+        return False
     
     for parent in iterate_hierarchy(kb, child_kb_node):
         if parent.data['name'] == parent_concept.name:

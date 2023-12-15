@@ -43,3 +43,35 @@ class Instance:
                 fields[field_name] = field_value
                 
         return cls(concept_name, fields)
+    
+    def pprint(self, level=0):
+        # recursively print the instance
+        """
+        Example:
+        >>> instance.pprint()
+        ActOnEntity {
+            act=PrintAct {},
+            entity=BinaryMathExpression {
+                left=Number {
+                    value=1
+                },
+                right=Number {
+                    value=2
+                },
+                operator=AddOperator {},
+            },
+        }
+        """
+        indent = '    ' * level
+        print(f'{indent}{self.concept_name} {{')
+        for field_name, field_value in self.fields.items():
+            if isinstance(field_value, Instance):
+                field_value.pprint(level + 1)
+            elif isinstance(field_value, list):
+                print(f'{indent}    {field_name}=[{", ".join([str(item) for item in field_value])}]')
+            else:
+                print(f'{indent}    {field_name}={field_value}')
+                
+        print(f'{indent}}}')
+        
+        

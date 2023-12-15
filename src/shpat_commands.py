@@ -3,17 +3,15 @@ from shpat.hierarchy import StaticKBHierarchy
 from shpat.knowledge_base import KnowledgeBase
 from shpat.presets.commands_v6 import PATTERNS
 from shpat.presets.syntactic_extractor_v6 import SyntacticExtractor
-from src.state_manager import ReferenceManager
 
 kb = KnowledgeBase()
 hierarchy = StaticKBHierarchy(kb)
 hierarchy.prefetch()
-sm = ReferenceManager(kb)
 
 
-def parse(text, debug=False):
+def parse(text, sm, debug=False):
     text = f' {text} '
-    extractor = SyntacticExtractor(PATTERNS, hierarchy=hierarchy, stage_manager=sm)
+    extractor = SyntacticExtractor(PATTERNS, hierarchy=hierarchy, stage_manager=None)
     extractor.process(text)
 
     if debug:
@@ -31,6 +29,8 @@ def parse(text, debug=False):
     print(f'parsed "{text}" as \n\t', match)
 
     if match.size != (len(text) - 2):
+        if not debug:
+            extractor.print_matches()
         raise ValueError("Didn't parse the whole sentence")
 
     return {

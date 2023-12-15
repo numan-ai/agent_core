@@ -2,3 +2,5 @@
 .pyttest_cahce/
 .env
 __pycache__/
+workdir/
+.DS_Store
