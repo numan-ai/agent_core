@@ -87,7 +87,7 @@ class Concept:
         return name
 
     def to_concept_instance(self):
-        from src.instance import Instance
+        from src.world_model.instance import Instance
         return Instance("Concept", {
             "name": self.name,
             "fields": {

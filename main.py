@@ -1,133 +1,37 @@
-from functools import partial
-import os
-from pprint import pprint
-
-import agci
-from src.concept import Concept
-from src.interfaces.base_knowledge_base import KBEdgeType
-import src.shpat_commands
+from src.input_processor import InputProcessor
+from src.decision_maker import DecisionMaker
+from src.action_manager import ActionManager
+from src.world_model import WorldModel
 from src.knowledge_base import KnowledgeBase
-from src.instance import Instance
-from src.reference_manager import ReferenceManager
-from src.helpers import find_associated_task, is_child_of
-from src.world_model.world_model import WorldModel
 
 
-wm = WorldModel(None, None)
-
-
-def parse(text, sm, debug=False):
-    structure = src.shpat_commands.parse(text, sm, debug=debug)
-    return Instance.from_dict(structure['name'], structure['data'])
-
-
-def run(text, by_user, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
-    instance = parse(text, sm, debug=True)
-    
-    if not by_user and instance.concept_name == 'Imperative':
-        instance = instance.fields['act']
-    
-    return run_instance(instance, kb, interpreter, sm=sm)
-
-
-def resolve(text, stage_manager: ReferenceManager):
-    instance = parse(text, stage_manager, debug=False)
-    result = resolve_instance(instance, stage_manager=stage_manager)
-    print(f"Resolved \"{text}\" to:", result)
-    return result
-
-
-def resolve_instance(instance, stage_manager: ReferenceManager):
-    result = stage_manager.find(instance)
-    return result
-
-
-def get_field(entity, field_name, kb: KnowledgeBase, interpreter: agci.Interpreter):
-    if field_name not in entity.fields:
-        print('Field not found: ' + field_name)
-        concept = kb.find_concept(entity.concept_name)
-        fields = kb.out(concept.id, KBEdgeType.FIELD)
+class AgentCore:
+    def __init__(self):
+        self.input_processor = InputProcessor(self)
+        self.decision_maker = DecisionMaker(self)
+        self.action_manager = ActionManager(self)
+        self.world_model = WorldModel(self)
+        self.knowledge_base = KnowledgeBase(self)
         
-        for field in fields:
-            if field.data['name'] != field_name:
-                continue
-            fex_tasks = kb.out(field.id, KBEdgeType.FEX_OUT)
-            fex_task_name = fex_tasks[0].data['name']
-            print('Field triggered fex function: ' + fex_task_name)
-            
-            value = interpreter.run_function(fex_task_name, {
-                'entity': entity,
-            })
-            
-            entity.fields[field_name] = value
-            break
-        else:
-            raise Exception(f'Field "{field_name}" not found')
-    
-    return entity.fields[field_name]
-
-
-def run_instance(trigger_instance: Instance, kb, interpreter: agci.Interpreter, sm: ReferenceManager):
-    sm.push_context()
-    sm.save(trigger_instance)
-    func_name, new_instance = find_associated_task(kb, trigger_instance)
-    
-    is_act = is_child_of(kb, trigger_instance.get_concept(), Concept('Act'))
-    
-    if is_act:
-        wm.action_history.push(new_instance)
-    result = interpreter.run_function(func_name, {
-        **new_instance.fields
-    })
-    if is_act:
-        wm.action_history.pop()
-    sm.pop_context()
-    return result
-
-
-def get_interpreter():
-    kb = KnowledgeBase()
-
-    sm = ReferenceManager(kb, parse)
-    
-    interpreter = agci.Interpreter({
-        'list': list,
-        'int': int,
-        'str': str,
-        'float': float,
-        'print': print,
-        'pprint': pprint,
-        'kb': kb,
-        'set': set,
-        'isinstance': isinstance,
-        'Instance': Instance,
-        'None': None,
-        'max': max,
-        'min': min,
-        'open': open,
-        'os': os,
-        'exit': exit,
-        'Exception': Exception,
-    })
-    interpreter.global_vars['run'] = partial(run, by_user=False, kb=kb, interpreter=interpreter, sm=sm)
-    interpreter.global_vars['run_instance'] = partial(run_instance, kb=kb, interpreter=interpreter, sm=sm)
-    interpreter.global_vars['resolve'] = partial(resolve, stage_manager=sm)
-    interpreter.global_vars['resolve_instance'] = partial(resolve_instance, stage_manager=sm)
-    interpreter.global_vars['get_field'] = partial(get_field, kb=kb, interpreter=interpreter)
-
-    interpreter.load_file("agent_code/core.py")
-    interpreter.load_file("agent_code/constants.py")
-    interpreter.load_file("agent_code/file_system.py")
-    
-    return interpreter
+        self.modules = [
+            self.input_processor,
+            self.decision_maker,
+            self.action_manager,
+            self.world_model,
+            self.knowledge_base,
+        ]
+        
+    def step(self):
+        for module in self.modules:
+            module.step()
 
 
 def main():
-    interpreter = get_interpreter()
-    interpreter.run_main()
-    breakpoint()
-    pass
+    core = AgentCore()
+    for _ in range(10):
+        core.step()
+    
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
