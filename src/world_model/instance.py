@@ -96,15 +96,12 @@ class WorldModel:
         return [edge for edge in self.edges if edge.end == node_id]
             
     def copy(self):
-        raise NotImplementedError()
         new_world = WorldModel()
         for node in self.nodes:
             node_copy = node.copy()
-            props = copy.deepcopy(node.get_properties())
-            new_instance = Instance(node.concept_name, props, instance_id=node.id)
-            new_instance.assign_to_world_model(new_world)
+            new_world.add(node_copy)
             
-        new_world.edges = self.edges.copy()
+        new_world.edges = copy.deepcopy(self.edges)
             
         return new_world
 
@@ -251,8 +248,6 @@ def get_numeric_equality_goal_closeness(goal):
 
 
 def find_the_next_action_using_associations_only(goal):
-    breakpoint()
-    goal.fields.target_value
     return random.choice([press_button_a, press_button_b])
 
 
@@ -312,8 +307,6 @@ def main():
     btn = wm.add(Instance("ButtonA", {
         "logic_on_press": logic
     }))
-    
-    breakpoint()
     
     simple_planning_strategy(goal)
     
