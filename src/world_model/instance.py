@@ -32,10 +32,16 @@ class WorldModel:
         try:
             node = self.node_by_id[node_id]
             if not isinstance(node, Instance):
-                raise ValueError("Fields must never be accessed directly, use relations")
+                raise ValueError("Fields must never be accessed this way, use get_node")
             return node
         except KeyError:
             raise ValueError(f"Instance with id {node_id} not found")
+        
+    def get_node(self, node_id: str) -> WorldModelNode:
+        try:
+            return self.node_by_id[node_id]
+        except KeyError:
+            raise ValueError(f"Node with id {node_id} not found")
         
     def add(self, instance: 'Instance'):
         if instance.world_model is self:
@@ -61,9 +67,9 @@ class WorldModel:
             field = self.create_field(instance.id, key)
             if isinstance(value, Instance):
                 self.add(value)
-                self.create_edge(field.id, value.id, "value")
+                self.create_edge(field.id, value.id, "__value__")
             elif isinstance(value, InstanceField):
-                self.create_edge(field.id, value.id, "value")
+                self.create_edge(field.id, value.id, "__value__")
             else:
                 field.value = value
                 
@@ -89,11 +95,19 @@ class WorldModel:
             if edge.start == node_id and edge.name == edge_name:
                 return self.node_by_id[edge.end]
             
+    def in_one(self, node_id: str, edge_name: str):
+        for edge in self.edges:
+            if edge.end == node_id and edge.name == edge_name:
+                return self.node_by_id[edge.start]
+            
     def outgoing_edges(self, node_id: str) -> list[WorldModelEdge]:
         return [edge for edge in self.edges if edge.start == node_id]
     
     def incoming_edges(self, node_id: str) -> list[WorldModelEdge]:
         return [edge for edge in self.edges if edge.end == node_id]
+    
+    def both_edges(self, node_id: str) -> list[WorldModelEdge]:
+        return [edge for edge in self.edges if edge.end == node_id or edge.start == node_id]
             
     def copy(self):
         new_world = WorldModel()
@@ -161,7 +175,7 @@ class InstanceFieldsView:
         if field.value is not FIELD_VALUE_EMPTY:
             return field.value
         
-        value = self._instance.world_model.out_one(field.id, "value")
+        value = self._instance.world_model.out_one(field.id, "__value__")
         
         if value is None:
             raise AttributeError(f"Instance {self._instance} has no attribute {name}")
@@ -200,7 +214,7 @@ class InstanceField(WorldModelNode):
     @property
     def value(self):
         if self._value is FIELD_VALUE_EMPTY:
-            return self.world_model.out_one(self.id, "value")
+            return self.world_model.out_one(self.id, "__value__")
         return self._value
     
     @value.setter
@@ -247,8 +261,43 @@ def get_numeric_equality_goal_closeness(goal):
     return abs(target_value - current_value)
 
 
+def find_action_concept_for_numeric_equality(goal):
+    if goal.fields.target_value.value > goal.fields.value_to_change.value:
+        return "Increase"
+    elif goal.fields.target_value.value < goal.fields.value_to_change.value:
+        return "Decrease"
+    else:
+        return "DoNothing"
+    
+
+
 def find_the_next_action_using_associations_only(goal):
-    return random.choice([press_button_a, press_button_b])
+    action_concept = find_action_concept_for_numeric_equality(goal)
+    instance = goal.fields.value_to_change
+    
+    hierarchy = {
+        "Increase": {"IAddInstruction", },
+        "Decrease": {"ISubInstruction", },
+    }
+    
+    wm: WorldModel = instance.world_model
+    
+    for edge in wm.outgoing_edges(instance.id):
+        raise NotImplementedError()
+    
+    for edge in wm.incoming_edges(instance.id):
+        if edge.name != '__value__':
+            # skip own instance, only iterate external references
+            continue
+        start = wm.get_node(edge.start)
+        assert isinstance(start, InstanceField)
+        field_instance = wm.in_one(edge.start, start.name)
+        if field_instance.concept_name in hierarchy[action_concept]:
+            button_field_instance = wm.in_one(field_instance.id, '__value__')
+            button_instance = wm.in_one(button_field_instance.id, 'logic_on_press')
+            return globals()[button_instance.fields.simple_button_press]
+        
+    raise ValueError("No action found")
 
 
 def apply_action(world_model, action):
@@ -268,6 +317,7 @@ def simple_planning_strategy(goal):
     
     while not is_numeric_equality_goal_reached(goal):
         next_action = find_the_next_action_using_associations_only(goal)
+        breakpoint()
         new_world_copy = apply_action(world_model, next_action)
         goal.change_world_model(new_world_copy)
         
@@ -299,14 +349,21 @@ def main():
         "target_value": InstanceFieldReference("TargetDisplay-1", "value"),
     }))
     
-    logic = Instance("IAddInstruction", {
-        "instance": InstanceFieldReference("Counter-1", "value"),
-        "value": 1,
-    }, instance_id="IAddInstruction-1")
+    wm.add(Instance("ButtonA", {
+        "logic_on_press": Instance("IAddInstruction", {
+            "instance": InstanceFieldReference("Counter-1", "value"),
+            "value": 1,
+        }, instance_id="IAddInstruction-1"),
+        "simple_button_press": "press_button_a",
+    }, instance_id="ButtonA-1"))
     
-    btn = wm.add(Instance("ButtonA", {
-        "logic_on_press": logic
-    }))
+    wm.add(Instance("ButtonB", {
+        "logic_on_press": Instance("ISubInstruction", {
+            "instance": InstanceFieldReference("Counter-1", "value"),
+            "value": 1,
+        }, instance_id="ISubInstruction-1"),
+        "simple_button_press": "press_button_b",
+    }, instance_id="ButtonB-1"))
     
     simple_planning_strategy(goal)
     
