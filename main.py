@@ -24,12 +24,15 @@ class AgentCore:
     def step(self):
         for module in self.modules:
             module.step()
+            
+    def run(self):
+        while not self.action_manager.done:
+            self.step()
 
 
 def main():
     core = AgentCore()
-    for _ in range(10):
-        core.step()
+    core.run()
     
 
 

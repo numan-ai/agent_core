@@ -1,5 +1,6 @@
 import ast
 from src.base_module import AgentModule
+from src.knowledge_base.module import KBEdgeType, KnowledgeBase
 from src.world_model import Instance
 from agci.sst import Graph, ast_to_sst
 
@@ -14,16 +15,24 @@ class DecisionMaker(AgentModule):
         self.build_plan(reaction)
     
     def _find_event_reaction(self, event: Instance) -> Instance:
-        return event
+        kb: KnowledgeBase = self.core.knowledge_base
+        concept = kb.find_concept(event.concept_name)
+        reactions = kb.out(concept.id, KBEdgeType.REACTION)
+        if reactions:
+            return Instance(
+                concept_name=reactions[0].data['name'],
+            )
+            
+        raise ValueError("No reaction found")
     
     def build_plan(self, reaction: Instance):
-        func = f"""
-def main():
-    print({reaction.fields['sentence'].fields['act'].fields['entity'].fields['left'].fields['value']} + 2)
-    print(1 + 4)
-        """
-        func_def = ast.parse(func).body[0]
-        new_plan = ast_to_sst.Converter().convert(func_def)
+        kb: KnowledgeBase = self.core.knowledge_base
+        concept = kb.find_concept(reaction.concept_name)
+        tasks = kb.out(concept.id, KBEdgeType.TASK)
+        func_name = tasks[0].data['name']
+        
+        func = self.core.action_manager.interpreter.global_vars[func_name]
+        new_plan = func.graph
         
         if not self.plan.get_nodes():
             self.plan = new_plan

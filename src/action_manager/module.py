@@ -15,6 +15,8 @@ class ActionManager(AgentModule):
         self.interpreter.ctx.append(agci.interpreter.InterpreterContext(
             variables={**self.interpreter.global_vars}
         ))
+        self.interpreter.load_file('./agent_code/main.py')
+        self.done = False
         
     def step(self):
         plan = self.core.decision_maker.plan
@@ -24,6 +26,7 @@ class ActionManager(AgentModule):
             self.is_head_initialized = True
             
         if self.head is None:
+            self.done = True
             return
         
         try:

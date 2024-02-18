@@ -1,17 +1,21 @@
+import abc
 import copy
-import random
 import uuid
 
 from typing import Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 FIELD_VALUE_EMPTY = object()
 
 
-class WorldModelNode:
+class WorldModelNode(abc.ABC):
     def __init__(self, *, instance_id=None):
         self.id = instance_id or str(uuid.uuid4())
+        
+    @abc.abstractmethod
+    def copy(self):
+        pass
 
 
 @dataclass
@@ -105,15 +109,23 @@ class WorldModel:
     
     def incoming_edges(self, node_id: str) -> list[WorldModelEdge]:
         return [edge for edge in self.edges if edge.end == node_id]
-    
+        
     def both_edges(self, node_id: str) -> list[WorldModelEdge]:
         return [edge for edge in self.edges if edge.end == node_id or edge.start == node_id]
+    
+    def remove_out_edges(self, node_id: str, name: str):
+        self.edges = [
+            edge for edge in self.edges
+            if not (edge.start == node_id and edge.name == name)
+        ]
             
     def copy(self):
         new_world = WorldModel()
         for node in self.nodes:
             node_copy = node.copy()
-            new_world.add(node_copy)
+            node_copy.world_model = new_world
+            new_world.nodes.append(node_copy)
+            new_world.node_by_id[node_copy.id] = node_copy
             
         new_world.edges = copy.deepcopy(self.edges)
             
@@ -127,10 +139,10 @@ class Instance(WorldModelNode):
     Fields = Properties + Relations.
     Properties = Fields for instances without world model.
     """
-    def __init__(self, concept_name: str, fields: dict[str, any], *, instance_id=None):
+    def __init__(self, concept_name: str, fields: dict[str, any] = None, *, instance_id=None):
         super().__init__(instance_id=instance_id)
         self.concept_name = concept_name
-        self.__properties = fields
+        self.__properties = fields or {}
         self.world_model: Optional[WorldModel] = None
         self.fields = InstanceFieldsView(self)
     
@@ -148,6 +160,12 @@ class Instance(WorldModelNode):
             raise AttributeError(f"Instance {self} has no attribute {name}")
         
         return field
+    
+    def copy(self):
+        return Instance(
+            self.concept_name,
+            {}, 
+            instance_id=self.id)
     
     def __repr__(self) -> str:
         return f"{self.concept_name}({self.__properties})"
@@ -186,11 +204,20 @@ class InstanceFieldsView:
         if name.startswith('_'):
             super().__setattr__(name, value)
             return
-        if isinstance(value, Instance):
-            if self._instance.world_model is None:
-                raise ValueError("Instance is not assigned to a world model")
-            
-            self._instance.world_model.create_edge(self._instance, value, name)
+        wm = self._instance.world_model
+        if wm is not None:
+            # find the existing field
+            field = wm.out_one(self._instance.id, name)
+            if field is None:
+                raise AttributeError(f"Instance {self._instance} has no attribute {name}")
+                
+            if isinstance(value, WorldModelNode):
+                # remove old __value__ edge
+                wm.remove_out_edges(field.id, "__value__")
+                # create a new __value__ edge
+                wm.create_edge(field.id, value.id, "__value__")
+            else:
+                field.value = value
         else:
             self._properties[name] = value
 
@@ -221,6 +248,12 @@ class InstanceField(WorldModelNode):
     def value(self, value):
         assert not isinstance(value, WorldModelNode)
         self._value = value
+        
+    def copy(self):
+        field = InstanceField(self.name, self.world_model)
+        field.id = self.id
+        field.value = self._value
+        return field
         
     def __repr__(self) -> str:
         if self._value is FIELD_VALUE_EMPTY:
@@ -294,7 +327,7 @@ def find_the_next_action_using_associations_only(goal):
         field_instance = wm.in_one(edge.start, start.name)
         if field_instance.concept_name in hierarchy[action_concept]:
             button_field_instance = wm.in_one(field_instance.id, '__value__')
-            button_instance = wm.in_one(button_field_instance.id, 'logic_on_press')
+            button_instance = wm.in_one(button_field_instance.id, button_field_instance.name)
             return globals()[button_instance.fields.simple_button_press]
         
     raise ValueError("No action found")
@@ -317,7 +350,7 @@ def simple_planning_strategy(goal):
     
     while not is_numeric_equality_goal_reached(goal):
         next_action = find_the_next_action_using_associations_only(goal)
-        breakpoint()
+        
         new_world_copy = apply_action(world_model, next_action)
         goal.change_world_model(new_world_copy)
         

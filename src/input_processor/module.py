@@ -6,7 +6,7 @@ class InputProcessor(AgentModule):
     started = False
     
     def step(self):
-        if self.started == 2:
+        if self.started == 1:
             return
         self.started += 1
         
