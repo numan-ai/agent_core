@@ -25,16 +25,15 @@ def main():
         "id": rw_led.id,
     }))
     
-    # User: "press the button"
+    # User: "how many buttons there are?"
     agent.input_processor.send_event(Instance("UserSaidEvent", {
-        "sentence": Instance("HowManyQuestion", {
+        "sentence": Instance("HowManyThereAreQuestion", {
             "concept": Instance("PluralConcept", {
                 "concept": Instance("ButtonClass")
             }),
         }),
     }))
     
-    # don't pass the world, so that the button does not become unpressed
     agent.run(world=None)
     
 

@@ -33,7 +33,7 @@ def react_on_user_message(sentence: ActOnReferencedEntityStatement):
     act_on_entity(entity, sentence.fields.act)
     
     
-def react_on_user_message(sentence: HowManyQuestion(concept=PluralConcept)):
+def react_on_user_message(sentence: HowManyThereAreQuestion(concept=PluralConcept)):
     # it's wrapped in PluralConcept, so we need to get the inner concept
     class_concept = sentence.fields.concept.fields.concept
     # ButtonClass -> Button
