@@ -94,11 +94,15 @@ class KBNotFoundError(Exception):
 
 
 class BaseKnowledgeBase(abc.ABC):
-    def find_concept(self, cid: str) -> KBNode:
+    def find_concept(self, cid: str, should_raise: bool = True) -> KBNode:
         concept_name = Concept.get_name(cid)
         nodes = self.find_nodes(KBNodeType.CONCEPT, (
             ("name", concept_name),
         ))
+        
+        if not should_raise and not nodes:
+            # len(nodes) > 1 is critical, so raise
+            return None
         
         if len(nodes) > 1:
             raise KBIntegrityError(f"Multiple concepts with name '{concept_name}' found")
@@ -151,6 +155,14 @@ class BaseKnowledgeBase(abc.ABC):
 
     @abc.abstractmethod
     def get_node(self, node_id: int) -> KBNode:
+        pass
+    
+    @abc.abstractmethod
+    def new_node(self, label: str, data: dict) -> KBNode:
+        pass
+    
+    @abc.abstractmethod
+    def new_edge(self, label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
         pass
 
 
@@ -229,5 +241,49 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     def get_word(self, word: str):
         results, columns = db.cypher_query(
             f"""MATCH (a:Word {{name: '{word}'}}) RETURN a""")
+
+        return KBNode.create(results[0][0])
+    
+    def new_node(self, label: str, data: dict) -> KBNode:
+        data = dict_to_fields(data)
+        
+        results, columns = db.cypher_query(
+            f"""CREATE (a:{label} {data}) RETURN a""")
+
+        return KBNode.create(results[0][0])
+
+    def new_edge(self, label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
+        data = dict_to_fields(data)
+        
+        results, columns = db.cypher_query(
+            f"""MATCH (a), (b) WHERE id(a)={int(start_node_id)} AND id(b)={int(end_node_id)} CREATE (a)-[r:{label} {data}]->(b) RETURN r""")
+
+        return KBEdge(
+            id=results[0][0].element_id,
+            label=label,
+            start_id=start_node_id,
+            end_id=end_node_id,
+            data=data,
+        )
+        
+    def upsert_edge(self, edge_label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
+        data = dict_to_fields(data)
+        
+        results, columns = db.cypher_query(
+            f"""MATCH (a), (b) WHERE id(a)={int(start_node_id)} AND id(b)={int(end_node_id)} MERGE (a)-[r:{edge_label} {data}]->(b) RETURN r""")
+
+        return KBEdge(
+            id=results[0][0].element_id,
+            label=edge_label,
+            start_id=start_node_id,
+            end_id=end_node_id,
+            data=data,
+        )
+        
+    def update_node_data(self, node_id: int, data: dict):
+        data = dict_to_fields(data)
+        
+        results, columns = db.cypher_query(
+            f"""MATCH (a) WHERE id(a)={int(node_id)} SET a += {data} RETURN a""")
 
         return KBNode.create(results[0][0])

@@ -1,135 +1,11 @@
-import abc
-import copy
-import uuid
-
 from typing import Optional
-from dataclasses import dataclass
+
+from src.knowledge_base.concept import Concept
+from src.world_model.module import WorldModel
+from src.world_model.wm_entities import WorldModelNode
 
 
 FIELD_VALUE_EMPTY = object()
-
-
-class WorldModelNode(abc.ABC):
-    def __init__(self, *, instance_id=None):
-        self.id = instance_id or str(uuid.uuid4())
-        
-    @abc.abstractmethod
-    def copy(self):
-        pass
-
-
-@dataclass
-class WorldModelEdge:
-    start: str
-    end: str
-    name: str
-
-
-class WorldModel:
-    def __init__(self) -> None:
-        self.nodes = []
-        self.edges: list[WorldModelEdge] = []
-        
-        self.node_by_id = {}
-        
-    def get_instance(self, node_id: str) -> 'Instance':
-        try:
-            node = self.node_by_id[node_id]
-            if not isinstance(node, Instance):
-                raise ValueError("Fields must never be accessed this way, use get_node")
-            return node
-        except KeyError:
-            raise ValueError(f"Instance with id {node_id} not found")
-        
-    def get_node(self, node_id: str) -> WorldModelNode:
-        try:
-            return self.node_by_id[node_id]
-        except KeyError:
-            raise ValueError(f"Node with id {node_id} not found")
-        
-    def add(self, instance: 'Instance'):
-        if instance.world_model is self:
-            return
-        
-        if instance.world_model is not None and instance.world_model is not self:
-            raise ValueError("Instance is already assigned to another world model") 
-        
-        instance.world_model = self
-        
-        self.nodes.append(instance)
-        self.node_by_id[instance.id] = instance
-        
-        props = instance.get_properties()
-        
-        for key, value in list(props.items()):
-            if isinstance(value, InstanceReference):
-                props[key] = self.get_instance(value.instance_id)
-            elif isinstance(value, InstanceFieldReference):
-                props[key] = self.get_instance(value.instance_id).get_field(value.field_name)
-                
-        for key, value in list(props.items()):
-            field = self.create_field(instance.id, key)
-            if isinstance(value, Instance):
-                self.add(value)
-                self.create_edge(field.id, value.id, "__value__")
-            elif isinstance(value, InstanceField):
-                self.create_edge(field.id, value.id, "__value__")
-            else:
-                field.value = value
-                
-        props.clear()
-        
-        return instance
-        
-    def create_field(self, instance_id: str, name: str) -> 'InstanceField':
-        field = InstanceField(name, self)
-        self.nodes.append(field)
-        self.node_by_id[field.id] = field
-        self.create_edge(instance_id, field.id, name)
-        
-        return field
-        
-    def create_edge(self, start: str, end: str, edge_name: str):
-        edge = WorldModelEdge(start, end, edge_name)
-        self.edges.append(edge)
-        return edge
-        
-    def out_one(self, node_id: str, edge_name: str):
-        for edge in self.edges:
-            if edge.start == node_id and edge.name == edge_name:
-                return self.node_by_id[edge.end]
-            
-    def in_one(self, node_id: str, edge_name: str):
-        for edge in self.edges:
-            if edge.end == node_id and edge.name == edge_name:
-                return self.node_by_id[edge.start]
-            
-    def outgoing_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.start == node_id]
-    
-    def incoming_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.end == node_id]
-        
-    def both_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.end == node_id or edge.start == node_id]
-    
-    def remove_out_edges(self, node_id: str, name: str):
-        self.edges = [
-            edge for edge in self.edges
-            if not (edge.start == node_id and edge.name == name)
-        ]
-            
-    def copy(self):
-        new_world = WorldModel()
-        for node in self.nodes:
-            node_copy = node.copy()
-            node_copy.world_model = new_world
-            new_world.nodes.append(node_copy)
-            new_world.node_by_id[node_copy.id] = node_copy
-            
-        new_world.edges = copy.deepcopy(self.edges)
-            
-        return new_world
 
 
 class Instance(WorldModelNode):
@@ -154,6 +30,17 @@ class Instance(WorldModelNode):
     def get_properties(self):
         return self.__properties
     
+    def get_concept(self) -> Concept:
+        if self.world_model is not None:
+            # raise NotImplementedError()
+            pass
+        
+        return Concept(self.concept_name, {
+            field_name: field_value.get_concept()
+            for field_name, field_value in self.__properties.items()
+            if isinstance(field_value, Instance)
+        })
+    
     def get_field(self, name):
         field = self.world_model.out_one(self.id, name)
         if field is None:
@@ -176,6 +63,18 @@ class InstanceFieldsView:
     def __init__(self, instance: Instance):
         self._instance: Instance = instance
         self._properties = instance.get_properties()
+        
+    def get_all_fields(self):
+        if not self._instance.world_model:
+            return self._properties.copy()
+        
+        kb_fields = self._instance.world_model.outgoing_edges(self._instance.id)
+        
+        result = {}
+        
+        for field in kb_fields:
+            breakpoint()
+            result[field.name] = self._instance.world_model.get_node(field.end)
         
     def __getattr__(self, name: str):
         if name in self._properties:
@@ -231,47 +130,6 @@ class InstanceFieldsView:
         return repr(self._properties)
 
 
-class InstanceField(WorldModelNode):
-    def __init__(self, name, world_model) -> None:
-        super().__init__()
-        self.name = name
-        self.world_model = world_model
-        self._value = FIELD_VALUE_EMPTY
-        
-    @property
-    def value(self):
-        if self._value is FIELD_VALUE_EMPTY:
-            return self.world_model.out_one(self.id, "__value__")
-        return self._value
-    
-    @value.setter
-    def value(self, value):
-        assert not isinstance(value, WorldModelNode)
-        self._value = value
-        
-    def copy(self):
-        field = InstanceField(self.name, self.world_model)
-        field.id = self.id
-        field.value = self._value
-        return field
-        
-    def __repr__(self) -> str:
-        if self._value is FIELD_VALUE_EMPTY:
-            return f"<Field {self.name}>"
-        return f"<Field {self.name}=[{self._value}]>"
-
-
-@dataclass
-class InstanceReference:
-    instance_id: str
-    
-    
-@dataclass
-class InstanceFieldReference:
-    instance_id: str
-    field_name: str
-
-
 def press_button_a(world_model):
     world_model.get_instance("Counter-1").fields.value += 1
     
@@ -313,7 +171,7 @@ def find_the_next_action_using_associations_only(goal):
         "Decrease": {"ISubInstruction", },
     }
     
-    wm: WorldModel = instance.world_model
+    wm = instance.world_model
     
     for edge in wm.outgoing_edges(instance.id):
         raise NotImplementedError()
@@ -397,6 +255,17 @@ def main():
         }, instance_id="ISubInstruction-1"),
         "simple_button_press": "press_button_b",
     }, instance_id="ButtonB-1"))
+    
+    Instance("???", {
+        "act": Instance("ActOnEntity", {
+            "entity": Instance("File-1"),
+            "act": Instance("SaveAct"),
+        }),
+        "reaction": Instance("ActOnEntity", {
+            "entity": Instance("Function-func12"),
+            "act": Instance("CallAct"),
+        })
+    })
     
     simple_planning_strategy(goal)
     

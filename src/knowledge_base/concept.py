@@ -19,7 +19,10 @@ class Concept:
             for key, value in sorted(self.fields.items(), key=lambda x: x[0]):
                 if isinstance(value, list):
                     breakpoint()
-                cid.append(f'{key}={value.get_cid()},')
+                if isinstance(value, Concept):
+                    cid.append(f'{key}={value.get_cid()},')
+                else:
+                    cid.append(f'{key}={value},')
             cid[-1] = cid[-1][:-1]
             cid.append('}')
 
@@ -100,4 +103,3 @@ class Concept:
         if self.fields:
             return f"Concept(name='{self.name}', fields={self.fields})"
         return f"Concept(name='{self.name}')"
-    
