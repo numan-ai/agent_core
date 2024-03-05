@@ -41,6 +41,7 @@ class ActionManager(AgentModule):
             'wm': core.world_model,
             'Instance': Instance,
             'Concept': Concept,
+            'ValueError': ValueError,
         }, core)
         self.interpreter.load_file('./agent_code/ac_main.py')
         self.interpreter.load_file('./agent_code/ac_knowledge_base.py')

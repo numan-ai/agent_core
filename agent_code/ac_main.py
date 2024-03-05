@@ -72,8 +72,17 @@ def act_on_entity(entity: Button, act: PressAct):
     
 
 def resolve_reference(reference: DefiniteEntityReference):
+    class_concept = reference.fields.concept
+    instance_concept = find_instance_concept_for_class_concept(class_concept)
+    
+    results = wm.associative_graph.lookup(instance_concept.concept_name)
+    # if len(results) != 1:
+        # raise ValueError("Reference resolution failed")
+    instance = wm.get_instance(results[0][0])
+    return instance
+    
     # fake entity resolution
-    return Instance("Button", {"id": 0})
+    # return Instance("Button", {"id": 0})
 
 
 def process_act_on_entity_event(entity: Button, act: PressAct):

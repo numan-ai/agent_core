@@ -33,6 +33,7 @@ class Button(Component):
         super().__init__(world, component_id)
         self.power = 0
         self.output_pins.append(self.world.get_next_pin_id())
+        world.pin_values[self.output_pin] = 0
         
     def interact(self, action: str = "Press"):
         if action == "Press":
@@ -50,12 +51,32 @@ class Button(Component):
         self.world.pin_values[self.output_pin] = min(max(self.power, 0), 1)
         if self.power > 0:
             self.power -= 1
+            
+            
+            
+class Switch(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.power = 0
+        self.output_pins.append(self.world.get_next_pin_id())
+        world.pin_values[self.output_pin] = 0
+        
+    def interact(self, action: str = "Press"):
+        if action == "Press":
+            self.power = 1 - self.power
+            self.world.pin_values[self.output_pin] = self.power
+        else:
+            raise ValueError(f"Unknown action: {action}")
+        
+    def step(self):
+        self.world.pin_values[self.output_pin] = min(max(self.power, 0), 1)
 
 
 class LED(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
         self.input_pins.append(self.world.get_next_pin_id())
+        world.pin_values[self.input_pin] = 0
 
 
 class CircuitWorld:
@@ -63,7 +84,7 @@ class CircuitWorld:
     last_pin_id = 0
     
     def __init__(self) -> None:
-        self.components = []
+        self.components = {}
         self.wires = []
         self.pin_values = {}
         self.api = CircuitAPI(self)
@@ -79,7 +100,7 @@ class CircuitWorld:
         return cls.last_pin_id
     
     def step(self):
-        for comp in self.components:
+        for comp in self.components.values():
             comp.step()
     
     
@@ -88,16 +109,20 @@ class CircuitAPI:
         self.__world = world
     
     def list(self):
-        return self.__world.components
+        return list(self.__world.components.values())
     
     def create(self, label: str):
-        components = {
+        component_classes = {
             "Button": Button,
             "LED": LED,
+            "Switch": Switch,
         }
-        comp = components[label](self.__world, self.__world.get_next_id())
-        self.__world.components.append(comp)
+        comp = component_classes[label](self.__world, self.__world.get_next_id())
+        self.__world.components[comp.id] = comp
         return comp
+    
+    def connect(self, pin_a: int, pin_b: int):
+        self.__world.wires.append((pin_a, pin_b))
     
     def interact(self, component_id: int, action: str):
         try:

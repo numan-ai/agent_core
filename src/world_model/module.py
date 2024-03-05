@@ -45,6 +45,7 @@ class WorldModel(AgentModule):
             instance.id,
             weight=1,
         )
+        self.associative_graph.decay(1.01)
         
         if instance.world_model is self:
             return

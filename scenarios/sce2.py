@@ -1,41 +1,43 @@
+from environments import CircuitWorld
 from src.agent_core import AgentCore
 from src.world_model.instance import Instance
-from src.world_model.wm_entities import InstanceReference
+
+
+def setup(world_type):
+    world = world_type()
+
+    agent = AgentCore()
+    agent.action_manager.interpreter.global_vars["api"] = world.api
+    
+    return world, agent
 
 
 def main():
-    core = AgentCore()
+    world, agent = setup(CircuitWorld)
     
-    core.world_model.add(Instance("Button", {
-        "input_pin": Instance("Number", {"value": 0}),
-    }, instance_id="btn-1"))
+    rw_btn = world.api.create("Switch")
+    agent.world_model.add(Instance("CircuitSwitch", {
+        "id": rw_btn.id,
+    }))
     
-    core.input_processor.send_event(Instance("UserSaidEvent", {
-        "sentence": Instance("LogicOfActionStatement", {
-            "action": Instance("ActOnReferencedEntity", {
-                "act": Instance("PressAct"),
-                "reference": Instance("IndefiniteEntityReference", {
-                    "concept": Instance("ButtonClass"),
-                }),
+    rw_led = world.api.create("LED")
+    agent.world_model.add(Instance("LED", {
+        "id": rw_led.id,
+    }))
+    
+    # User: "turn on the led"
+    agent.input_processor.send_event(Instance("UserSaidEvent", {
+        "sentence": Instance("ActOnReferencedEntityStatement", {
+            "reference": Instance("DefiniteEntityReference", {
+                "concept": Instance("LEDClass"),
             }),
-            "result": Instance("SetEntityReferenceProperty", {
-                "reference": Instance("ReferenceFromPronoun", {
-                    "pronoun": Instance("PronounIt"),
-                }),
-                "property": Instance("OutputPin"),
-                "value": Instance("Number", {"value": 1}),
-            }),
+            "act": Instance("TurnOnAct"),
         }),
     }))
     
-    core.run()
+    agent.run(world=world)
     
-    core.input_processor.send_event(Instance("ActOnEntityEvent", {
-        "entity": InstanceReference("btn-1"),
-        "act": Instance("PressAct"),
-    }))
-    
-    core.run()
+    assert world.api.probe_pin(rw_led.input_pin) == 1, "LED is not turned on"
 
 
 if __name__ == "__main__":
