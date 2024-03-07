@@ -1,0 +1,6 @@
+agci @ git+ssh://git@github.com/agi-now/agci.git@114b9baca4aa16086d345367b572bf7bba13ef03
+grass @ git+ssh://git@github.com/agi-now/grass.git@dceffa845a06031c6304852f1efbf6a5b233dec0
+neomodel==5.2.1
+pytest==8.0.2
+python-dotenv==1.0.1
+pytz==2024.1

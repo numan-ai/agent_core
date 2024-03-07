@@ -61,7 +61,18 @@ def test_get_concept_does_not_exist(ugi):
     ug_fruit = ugi.get_concept("?????")
     assert ug_fruit is None
 
+
 def test_get_concept_field_exists(ugi):
+    ug_fruit = ugi.get_concept("Apple")
+    assert ug_fruit is not None
+    
+    ug_field = ug_fruit.get_field("name")
+    assert ug_field is not None
+    
+    assert ug_field.underlying.id == 4
+    
+    
+def test_get_concept_field_concept_exists(ugi):
     ug_fruit = ugi.get_concept("Apple")
     assert ug_fruit is not None
     

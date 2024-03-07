@@ -15,7 +15,19 @@ class InMemoryKB(BaseKnowledgeBase):
     def out(self, node_id: int, edge_type: KBEdgeType, 
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
             direct=True) -> list[KBNode]:
-        pass
+        result = []
+        
+        for start_id, end_id, edge_name in self.edges:
+            if start_id != node_id:
+                continue
+            
+            if edge_name is not edge_type:
+                continue
+            
+            node = self.nodes[end_id]
+            result.append(KBNode(**node, metadata={}))
+            
+        return result
     
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple, key: str, direction: KBEdgeDirection, 

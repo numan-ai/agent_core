@@ -3,6 +3,7 @@ from typing import Optional
 import uuid
 
 from src.knowledge_base.module import (
+    KBEdgeDirection,
     KBEdgeType,
     KBNode, 
     BaseKnowledgeBase,
@@ -41,6 +42,36 @@ class UKBConceptNode(UNode):
     
 class UKBFieldNode(UNode):
     underlying: KBNode
+    
+    def get_concept(self) -> UKBConceptNode:
+        result = self.graph.knowledge_base.out(
+            self.underlying.id, KBEdgeType.FIELD_NODE,
+            direction=KBEdgeDirection.IN)
+        
+        if len(result) != 1:
+            raise ValueError(
+                f"Field {self.underlying.id} has {len(result)} concepts")
+        
+        return UKBConceptNode(
+            id=self.graph.get_ukb_node_id(result[0]),
+            graph=self.graph,
+            underlying=result[0],
+        )
+        
+    def get_field_concept(self) -> UKBConceptNode:
+        result = self.graph.knowledge_base.out(
+            self.underlying.id, KBEdgeType.FIELD_CONCEPT,
+            direction=KBEdgeDirection.OUT)
+        
+        if len(result) != 1:
+            raise ValueError(
+                f"Field {self.underlying.id} has {len(result)} field concepts")
+        
+        return UKBConceptNode(
+            id=self.graph.get_ukb_node_id(result[0]),
+            graph=self.graph,
+            underlying=result[0],
+        )
     
     
 class UWMNode(UNode):
