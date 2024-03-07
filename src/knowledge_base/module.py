@@ -1,3 +1,4 @@
+from typing import Optional
 from src.base_module import AgentModule
 
 
@@ -59,7 +60,7 @@ class KBNode:
     id: int
     label: str
     data: dict
-    metadata: dict = field(repr=False)
+    metadata: dict = field(repr=False, default_factory=dict)
     
     @classmethod
     def create(cls, raw_node):
@@ -170,6 +171,10 @@ class BaseKnowledgeBase(abc.ABC):
     
     @abc.abstractmethod
     def new_edge(self, label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
+        pass
+    
+    @abc.abstractmethod
+    def get_field(self, concept_id: str, field_name: str) -> Optional[KBNode]:
         pass
 
 

@@ -27,9 +27,8 @@ class UKBConceptNode(UNode):
     underlying: KBNode
     
     def get_field(self, field_name: str) -> Optional['UKBFieldNode']:
-        fields = self.graph.knowledge_base.out_dict2(
-            self.underlying.id, KBEdgeType.FIELD_NODE)
-        kb_field = fields.get(field_name)
+        kb_field = self.graph.knowledge_base.get_field(
+            self.underlying.id, field_name)
         if kb_field is None:
             return None
         
@@ -38,7 +37,35 @@ class UKBConceptNode(UNode):
             graph=self.graph,
             underlying=kb_field,
         )
-    
+        
+    def get_class(self) -> Optional['UKBConceptNode']:
+        result = self.graph.knowledge_base.out(
+            self.underlying.id, KBEdgeType.CLASS,
+            direction=KBEdgeDirection.OUT)
+        
+        if len(result) != 1:
+            return None
+        
+        return UKBConceptNode(
+            id=self.graph.get_ukb_node_id(result[0]),
+            graph=self.graph,
+            underlying=result[0],
+        )
+        
+    def get_instance(self) -> Optional['UKBConceptNode']:
+        result = self.graph.knowledge_base.out(
+            self.underlying.id, KBEdgeType.CLASS,
+            direction=KBEdgeDirection.IN)
+        
+        if len(result) != 1:
+            return None
+        
+        return UKBConceptNode(
+            id=self.graph.get_ukb_node_id(result[0]),
+            graph=self.graph,
+            underlying=result[0],
+        )
+        
     
 class UKBFieldNode(UNode):
     underlying: KBNode

@@ -1,3 +1,4 @@
+from typing import Optional
 from src.knowledge_base.module import BaseKnowledgeBase, KBEdge, KBEdgeDirection, KBEdgeType, KBNode, KBNodeType
 
 
@@ -18,6 +19,9 @@ class InMemoryKB(BaseKnowledgeBase):
         result = []
         
         for start_id, end_id, edge_name in self.edges:
+            if direction is KBEdgeDirection.IN:
+                start_id, end_id = end_id, start_id
+                
             if start_id != node_id:
                 continue
             
@@ -25,7 +29,7 @@ class InMemoryKB(BaseKnowledgeBase):
                 continue
             
             node = self.nodes[end_id]
-            result.append(KBNode(**node, metadata={}))
+            result.append(KBNode(**node))
             
         return result
     
@@ -47,7 +51,7 @@ class InMemoryKB(BaseKnowledgeBase):
                 continue
             
             node = self.nodes[end_id]
-            result[node['data'][key]] = KBNode(**node, metadata={})
+            result[node['data'][key]] = KBNode(**node)
             
         return result
     
@@ -65,7 +69,7 @@ class InMemoryKB(BaseKnowledgeBase):
                 result.append(node)
                 
         return [
-            KBNode(**node, metadata={}) for node in result   
+            KBNode(**node) for node in result   
         ]
                 
 
@@ -77,3 +81,32 @@ class InMemoryKB(BaseKnowledgeBase):
     
     def new_edge(self, label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
         pass
+    
+    def _iterate_hierarchy_up(self, concept_id: int, already_visited: set[int] = None):
+        if already_visited is None:
+            already_visited = set()
+                        
+        if concept_id in already_visited:
+            return
+            
+        already_visited.add(concept_id)
+        
+        yield concept_id
+        
+        parents = []
+        
+        for edge in self.edges:
+            if edge[0] == concept_id and edge[2] is KBEdgeType.PARENT:
+                yield edge[0]
+                parents.append(edge[1])
+                
+        for parent in parents:
+            yield from self._iterate_hierarchy_up(parent)
+
+    def get_field(self, concept_id: int, field_name: str) -> Optional[KBNode]:
+        for parent_id in self._iterate_hierarchy_up(concept_id):
+            for edge in self.edges:
+                if edge[0] == parent_id and edge[2] is KBEdgeType.FIELD_NODE:
+                    field = self.nodes[edge[1]]
+                    if field['data']['name'] == field_name:
+                        return KBNode(**field)
