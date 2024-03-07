@@ -152,8 +152,6 @@ def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
     })
     
     
-    
-    
 def kb_find_field_node(entity: CircuitLED, concept: TurnedOnState):
     concept_node = kb.find_concept(entity.concept_name)
     fields = kb.out(concept_node.id, KBEdgeType.FIELD_NODE)

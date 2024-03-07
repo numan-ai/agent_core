@@ -317,3 +317,6 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
             f"""MATCH (a) WHERE id(a)={int(node_id)} SET a += {data} RETURN a""")
 
         return KBNode.create(results[0][0])
+    
+    def get_field(self, concept_id: str, field_name: str) -> Optional[KBNode]:
+        raise NotImplementedError()

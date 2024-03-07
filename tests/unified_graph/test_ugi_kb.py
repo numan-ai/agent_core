@@ -43,7 +43,15 @@ KB_NODES = [{
     "id": 8,
     "label": "Field",
     "data": {"name": "fruit"},
-}]
+}, {
+    "id": 9,
+    "label": "Field",
+    "data": {"name": "is_john"},
+}, {
+    "id": 10,
+    "label": "Field",
+    "data": {"name": "name"},
+}, ]
 
 KB_EDGES = [
     (0, 1, KBEdgeType.CLASS),
@@ -54,10 +62,17 @@ KB_EDGES = [
     (0, 5, KBEdgeType.FIELD_NODE),
     (0, 6, KBEdgeType.FIELD_NODE),
     (7, 8, KBEdgeType.FIELD_NODE),
+    (7, 9, KBEdgeType.FIELD_NODE),
+    (7, 10, KBEdgeType.FIELD_NODE),
     (6, 8, KBEdgeType.FIELD_REVERSE),
 ]
-    
-    
+
+AC_CODE = """
+def get_field(concept: Person, field: Fruit):
+    set_field(concept, "name", "John")
+"""
+
+
 @pytest.fixture(scope="session")
 def ugi():
     kb = InMemoryKB(
