@@ -103,6 +103,31 @@ class UKBFieldNode(UNode):
     
 class UWMNode(UNode):
     underlying: Instance
+    
+    def get_concept(self) -> Optional[UKBConceptNode]:
+        result = self.graph.knowledge_base.find_concept(
+            self.underlying.concept_name, should_raise=False)
+        
+        if result is None:
+            return None
+        
+        return UKBConceptNode(
+            id=self.graph.get_ukb_node_id(result),
+            graph=self.graph,
+            underlying=result,
+        )
+        
+    def get_field_value(self, field_name) -> Optional['UWMNode']:
+        try:
+            result = self.underlying.fields[field_name]
+        except AttributeError:
+            return None
+        
+        return UWMNode(
+            id=self.graph.get_uwm_node_id(result),
+            graph=self.graph,
+            underlying=result,
+        )
 
 
 class UGraph:
@@ -131,7 +156,7 @@ class UGraph:
             underlying=kb_node,
         )
         
-    def get_instance(self, instance_id) -> Optional[UWMNode]:
+    def get_wm_instance(self, instance_id) -> Optional[UWMNode]:
         try:
             instance: Instance = self.world_model.get_instance(instance_id)
         except ValueError:

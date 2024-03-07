@@ -51,8 +51,9 @@ def ugi():
     )
     wm = WorldModel(core=None)
     wm.add(Instance("Apple", {
-        
-    }))
+        "name": Instance("String", {"value": "AppleName"}),
+        "age": Instance("Number", {"value": 1}),
+    }, instance_id="apple-1"))
     
     return UGraph(
         knowledge_base=kb, 
@@ -60,18 +61,18 @@ def ugi():
     )
 
 
-def test_get_concept(ugi):
+def test_kb_get_concept(ugi):
     ug_fruit = ugi.get_concept("Fruit")
     assert ug_fruit is not None
     assert ug_fruit.underlying.id == 0
     
     
-def test_get_concept_does_not_exist(ugi):
+def test_kb_get_concept_does_not_exist(ugi):
     ug_fruit = ugi.get_concept("?????")
     assert ug_fruit is None
 
 
-def test_get_concept_field(ugi):
+def test_kb_get_concept_field(ugi):
     ug_fruit = ugi.get_concept("Apple")
     assert ug_fruit is not None
     
@@ -81,7 +82,7 @@ def test_get_concept_field(ugi):
     assert ug_field.underlying.id == 4
     
     
-def test_get_concept_field_concept(ugi):
+def test_kb_get_concept_field_concept(ugi):
     ug_fruit = ugi.get_concept("Apple")
     assert ug_fruit is not None
     
@@ -94,7 +95,7 @@ def test_get_concept_field_concept(ugi):
     assert ug_fruit.underlying.id == 2
     
 
-def test_get_concept_field_inherited(ugi):
+def test_kb_get_concept_field_inherited(ugi):
     ug_fruit = ugi.get_concept("Apple")
     assert ug_fruit is not None
     
@@ -104,7 +105,7 @@ def test_get_concept_field_inherited(ugi):
     assert ug_field.underlying.id == 5
 
 
-def test_get_class(ugi):
+def test_kb_get_class(ugi):
     ug_fruit = ugi.get_concept("Apple")
     assert ug_fruit is not None
     
@@ -117,3 +118,19 @@ def test_get_class(ugi):
     assert ug_fruit is not None
     
     assert ug_fruit.underlying.id == 2
+    
+    
+def test_wm_instance_concept(ugi):
+    ug_apple = ugi.get_wm_instance("apple-1")
+    ug_apple_concept = ug_apple.get_concept()
+    
+    assert ug_apple_concept is not None
+    assert ug_apple_concept.underlying.id == 2
+
+
+def test_wm_instance_field_value(ugi):
+    ug_apple = ugi.get_wm_instance("apple-1")
+    ug_apple_name = ug_apple.get_field_value("name")
+    
+    assert ug_apple_name is not None
+    assert ug_apple_name.underlying.fields.value == "AppleName"
