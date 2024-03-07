@@ -31,6 +31,18 @@ KB_NODES = [{
     "id": 5,
     "label": "Field",
     "data": {"name": "age"},
+}, {
+    "id": 6,
+    "label": "Field",
+    "data": {"name": "owner"},
+}, {
+    "id": 7,
+    "label": "Concept",
+    "data": {"name": "Person"},
+}, {
+    "id": 8,
+    "label": "Field",
+    "data": {"name": "fruit"},
 }]
 
 KB_EDGES = [
@@ -40,6 +52,9 @@ KB_EDGES = [
     (3, 1, KBEdgeType.PARENT),
     (2, 4, KBEdgeType.FIELD_NODE),
     (0, 5, KBEdgeType.FIELD_NODE),
+    (0, 6, KBEdgeType.FIELD_NODE),
+    (7, 8, KBEdgeType.FIELD_NODE),
+    (6, 8, KBEdgeType.FIELD_REVERSE),
 ]
     
     
@@ -53,10 +68,13 @@ def ugi():
     wm.add(Instance("Apple", {
         "name": Instance("String", {"value": "AppleName"}),
         "age": Instance("Number", {"value": 1}),
+        "owner": Instance("Person", {
+            "name": Instance("String", {"value": "PersonName"}),
+        }, instance_id="person-1"),
     }, instance_id="apple-1"))
     
     return UGraph(
-        knowledge_base=kb, 
+        knowledge_base=kb,
         world_model=wm,
     )
 
@@ -134,3 +152,11 @@ def test_wm_instance_field_value(ugi):
     
     assert ug_apple_name is not None
     assert ug_apple_name.underlying.fields.value == "AppleName"
+
+
+def test_wm_instance_field_reverse(ugi):
+    ug_person = ugi.get_wm_instance("person-1")
+    ug_apple = ug_person.get_field_value("fruit")
+    
+    assert ug_apple is not None
+    assert ug_apple.underlying.id == "apple-1"

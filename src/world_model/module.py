@@ -103,14 +103,24 @@ class WorldModel(AgentModule):
             if edge.end == node_id and edge.name == edge_name:
                 return self.node_by_id[edge.start]
             
-    def outgoing_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.start == node_id]
+    def outgoing_edges(self, node_id: str, edge_name: str = None) -> list[WorldModelEdge]:
+        return [
+            edge for edge in self.edges 
+            if edge.start == node_id and (edge_name is None or edge.name == edge_name)
+        ]
     
-    def incoming_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.end == node_id]
+    def incoming_edges(self, node_id: str, edge_name: str = None) -> list[WorldModelEdge]:
+        return [
+            edge for edge in self.edges 
+            if edge.end == node_id and (edge_name is None or edge.name == edge_name)
+        ]
         
-    def both_edges(self, node_id: str) -> list[WorldModelEdge]:
-        return [edge for edge in self.edges if edge.end == node_id or edge.start == node_id]
+    def both_edges(self, node_id: str, edge_name: str = None) -> list[WorldModelEdge]:
+        return [
+            edge for edge in self.edges 
+            if (edge.end == node_id or edge.start == node_id) and (
+                edge_name is None or edge.name == edge_name)
+        ]
     
     def remove_out_edges(self, node_id: str, name: str):
         self.edges = [

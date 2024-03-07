@@ -1,5 +1,12 @@
 from typing import Optional
-from src.knowledge_base.module import BaseKnowledgeBase, KBEdge, KBEdgeDirection, KBEdgeType, KBNode, KBNodeType
+from src.knowledge_base.module import (
+    KBNode,
+    KBEdge,
+    KBEdgeType,
+    KBNodeType,
+    KBEdgeDirection,
+    BaseKnowledgeBase,
+)
 
 
 class InMemoryKB(BaseKnowledgeBase):
@@ -20,6 +27,9 @@ class InMemoryKB(BaseKnowledgeBase):
         
         for start_id, end_id, edge_name in self.edges:
             if direction is KBEdgeDirection.IN:
+                start_id, end_id = end_id, start_id
+            
+            if direction is KBEdgeDirection.ANY and end_id == node_id:
                 start_id, end_id = end_id, start_id
                 
             if start_id != node_id:

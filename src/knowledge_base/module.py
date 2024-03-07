@@ -42,6 +42,8 @@ class KBEdgeType(enum.Enum):
     FIELD_CONCEPT = "concept"
     # Field -> Task
     FIELD_GETTER = "getter"
+    # Field -> Field
+    FIELD_REVERSE = "reverse"
     REACTION = "reaction"
     
     
@@ -53,6 +55,7 @@ class KBNodeType(enum.Enum):
 class KBEdgeDirection(enum.Enum):
     OUT = enum.auto()
     IN = enum.auto()
+    ANY = enum.auto()
 
 
 @dataclass

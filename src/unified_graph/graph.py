@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
-from typing import Optional
 import uuid
+from typing import Optional
+from dataclasses import dataclass, field
 
 from src.knowledge_base.module import (
-    KBEdgeDirection,
-    KBEdgeType,
     KBNode, 
+    KBEdgeType,
+    KBEdgeDirection,
     BaseKnowledgeBase,
 )
 from src.world_model.instance import Instance
@@ -117,12 +117,50 @@ class UWMNode(UNode):
             underlying=result,
         )
         
+    def _find_reverse_field(self, field_name) -> Optional[str]:
+        kb_concept = self.graph.knowledge_base.find_concept(
+                self.underlying.concept_name, should_raise=False)
+        
+        if kb_concept is None:
+            return None
+            
+        kb_field = self.graph.knowledge_base.get_field(
+            kb_concept.id, field_name)
+        
+        if kb_field is None:
+            return None
+
+        reverse_fields = self.graph.knowledge_base.out(
+            kb_field.id, KBEdgeType.FIELD_REVERSE,
+            direction=KBEdgeDirection.ANY)
+        
+        if len(reverse_fields) < 1:
+            return None
+        
+        return reverse_fields[0].data['name']
+        
     def get_field_value(self, field_name) -> Optional['UWMNode']:
         try:
             result = self.underlying.fields[field_name]
         except AttributeError:
-            return None
-        
+            reverse_field_name = self._find_reverse_field(field_name)
+            
+            reverse_edges = self.graph.world_model.incoming_edges(
+                self.underlying.id, '__value__')
+            
+            for reverse_edge in reverse_edges:
+                reverse_field_values = self.graph.world_model.incoming_edges(
+                    reverse_edge.start, reverse_field_name)
+                
+                if len(reverse_field_values) < 1:
+                    return None
+                
+                result = self.graph.world_model.get_instance(
+                    reverse_field_values[0].start)
+                break
+            else:
+                return None
+                
         return UWMNode(
             id=self.graph.get_uwm_node_id(result),
             graph=self.graph,
@@ -187,5 +225,3 @@ class UGraph:
             self.__ug_ids_to_wm_ids[ugi_id] = instance.id
         
         return ugi_id
-        
-    
