@@ -31,24 +31,24 @@ class Component(abc.ABC):
 class Button(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
-        self.power = 0
+        self.power = 0.0
         self.output_pins.append(self.world.get_next_pin_id())
         world.pin_values[self.output_pin] = 0
         
     def interact(self, action: str = "Press"):
         if action == "Press":
-            self.power = 1
+            self.power = 1.0
             self.world.pin_values[self.output_pin] = 1
         elif action == "PressDown":
-            self.power = -1
+            self.power = float('int')
             self.world.pin_values[self.output_pin] = 1
         elif action == "PressUp":
-            self.power = 0
+            self.power = 0.0
         else:
             raise ValueError(f"Unknown action: {action}")
         
     def step(self):
-        self.world.pin_values[self.output_pin] = min(max(self.power, 0), 1)
+        self.world.pin_values[self.output_pin] = int(min(max(self.power, 0), 1))
         if self.power > 0:
             self.power -= 1
             
