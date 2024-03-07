@@ -4,6 +4,7 @@ import agci.interpreter
 from src.base_module import AgentModule
 from src.knowledge_base.concept import Concept
 from src.knowledge_base.hierarchy import PlainHierarchy, is_child
+from src.knowledge_base.module import KBEdgeDirection, KBEdgeType
 from src.world_model.instance import Instance
 from src.world_model.wm_entities import InstanceReference
 
@@ -28,6 +29,11 @@ class InterpreterWithConceptDispatch(agci.StepInterpreter):
         return is_child(HIERARCHY, arg_concept, param_concept), arg_value
 
 
+def debug(*args):
+    breakpoint()
+    pass
+
+
 class ActionManager(AgentModule):
     def __init__(self, core) -> None:
         super().__init__(core)
@@ -42,7 +48,11 @@ class ActionManager(AgentModule):
             'Instance': Instance,
             'Concept': Concept,
             'ValueError': ValueError,
+            'KBEdgeType': KBEdgeType,
+            'KBEdgeDirection': KBEdgeDirection,
+            'debug': debug,
         }, core)
+        self.interpreter.global_vars['interpreter'] = self.interpreter
         self.interpreter.load_file('./agent_code/ac_main.py')
         self.interpreter.load_file('./agent_code/ac_knowledge_base.py')
         self.done = False

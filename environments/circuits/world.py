@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+import abc
 
 
-
-class Component:    
+class Component(abc.ABC):    
     def __init__(self, world, component_id) -> None:
         self.world = world
         self.id = component_id
@@ -21,6 +20,7 @@ class Component:
             raise ValueError("Component must have exactly one output pin")
         return self.output_pins[0]
     
+    @abc.abstractmethod
     def interact(self, action: str = "Press"):
         pass
     
@@ -77,6 +77,9 @@ class LED(Component):
         super().__init__(world, component_id)
         self.input_pins.append(self.world.get_next_pin_id())
         world.pin_values[self.input_pin] = 0
+        
+    def interact(self, action: str = "Press"):
+        raise ValueError("LED cannot be interacted with")
 
 
 class CircuitWorld:

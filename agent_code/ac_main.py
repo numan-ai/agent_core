@@ -66,7 +66,7 @@ def list_world_model_instances(concept: Concept):
     # return nodes
     
     
-def act_on_entity(entity: Button, act: PressAct):
+def act_on_entity(entity: CircuitButton, act: PressAct):
     # send the "Press" action to the real world button
     api.interact(entity.fields.id, "Press")
     
@@ -76,8 +76,8 @@ def resolve_reference(reference: DefiniteEntityReference):
     instance_concept = find_instance_concept_for_class_concept(class_concept)
     
     results = wm.associative_graph.lookup(instance_concept.concept_name)
-    # if len(results) != 1:
-        # raise ValueError("Reference resolution failed")
+    if len(results) == 0:
+        raise ValueError("Reference resolution failed")
     instance = wm.get_instance(results[0][0])
     return instance
     
@@ -85,14 +85,14 @@ def resolve_reference(reference: DefiniteEntityReference):
     # return Instance("Button", {"id": 0})
 
 
-def process_act_on_entity_event(entity: Button, act: PressAct):
+def process_act_on_entity_event(entity: CurcuitButton, act: PressAct):
     entity.fields.output_pin.fields.value = 1
     set_field(entity, "OutputPin", 1)
     set_field(entity, "output_pin", 1)
     set_field(FieldOfEntity(entity, "OutputPin"), 1)
 
 
-def process_act_on_entity_event(entity: LED, act: PressAct):
+def process_act_on_entity_event(entity: CurcuitLED, act: PressAct):
     pass
 
 
@@ -100,7 +100,11 @@ def set_field(field: FieldOfEntity, value: Concept):
     pass
 
 
-def get_field(entity: LED, field: StateTurnedOn):
+def get_field(entity: CurcuitLED, field: StateTurnedOn):
+    return entity.fields.input_pin.fields.value == 1
+
+
+def get_field_a(entity: CurcuitLED, field: StateTurnedOn):
     return entity.fields.input_pin.fields.value == 1
 
 
@@ -110,3 +114,52 @@ def evaluate_expression(expression: BinaryMathExpression(op=GreaterThan, left=Nu
 
 def evaluate_expression(expression: BinaryMathExpression(op=LessThan, left=Number, right=Number)):
     return expression.fields.left.fields.value < expression.fields.right.fields.value
+
+
+def act_on_entity(entity: CircuitLED, act: PutIntoStateAct):
+    achieve_state_goal(entity=entity, state=act.fields.state)
+    
+    
+def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
+    field_node = kb_find_field_node(entity=entity, concept=state)
+    task_node = kb.out(field_node.id, KBEdgeType.FIELD_GETTER)[0]
+    task_name = task_node.data['name']
+    func_entity = interpreter.global_vars[task_name]
+    graph = func_entity.dispatch_options[0].graph
+    print(graph)
+    debug(graph)
+    
+    graph_instance = Instance("AGCI_Return", {
+        "value": Instance("AGCI_CompareOperation", {
+            "left": Instance("AGCI_GetField", {
+                "entity": entity,
+                "field_name": "input_pin",
+            }),
+            "right": Instance("Number", {
+                "value": 1,
+            }),
+        }),
+    })
+    
+    goal_instance = Instance("GoalMakeLeftEqualToRight", {
+        "left": Instance("EntityFieldValueByName", {
+            "entity": entity,
+            "field_name": "input_pin",
+        }),
+        "right": Instance("Number", {
+            "value": 1,
+        }),
+    })
+    
+    
+    
+    
+def kb_find_field_node(entity: CircuitLED, concept: TurnedOnState):
+    concept_node = kb.find_concept(entity.concept_name)
+    fields = kb.out(concept_node.id, KBEdgeType.FIELD_NODE)
+    for field in fields:
+        field_concept = kb.out(field.id, KBEdgeType.FIELD_CONCEPT)[0]
+        if field_concept.data['name'] == concept.concept_name:
+            return field
+        
+    raise ValueError("Field not found")

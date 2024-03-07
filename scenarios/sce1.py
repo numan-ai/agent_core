@@ -16,7 +16,7 @@ def main():
     world, agent = setup(CircuitWorld)
     
     rw_btn = world.api.create("Button")
-    agent.world_model.add(Instance("Button", {
+    agent.world_model.add(Instance("CircuitButton", {
         "id": rw_btn.id,
     }))
     
@@ -24,7 +24,7 @@ def main():
     agent.input_processor.send_event(Instance("UserSaidEvent", {
         "sentence": Instance("ActOnReferencedEntityStatement", {
             "reference": Instance("DefiniteEntityReference", {
-                "concept": Instance("ButtonClass"),
+                "concept": Instance("CircuitButtonClass"),
             }),
             "act": Instance("PressAct"),
         }),

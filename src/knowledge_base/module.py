@@ -39,6 +39,8 @@ class KBEdgeType(enum.Enum):
     FEX_OUT = "fex_out"
     # Field -> Concept
     FIELD_CONCEPT = "concept"
+    # Field -> Task
+    FIELD_GETTER = "getter"
     REACTION = "reaction"
     
     
@@ -100,15 +102,14 @@ class BaseKnowledgeBase(abc.ABC):
             ("name", concept_name),
         ))
         
-        if not should_raise and not nodes:
-            # len(nodes) > 1 is critical, so raise
-            return None
-        
+        # len(nodes) > 1 is critical, so raise
         if len(nodes) > 1:
             raise KBIntegrityError(f"Multiple concepts with name '{concept_name}' found")
         
         if not nodes:
-            raise KBNotFoundError(f"Concept '{concept_name}' not found")
+            if should_raise:
+                raise KBNotFoundError(f"Concept '{concept_name}' not found")
+            return None
         
         return nodes[0]
     
@@ -147,6 +148,12 @@ class BaseKnowledgeBase(abc.ABC):
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple, key: str, direction: KBEdgeDirection, 
                  direct=True) -> dict[str, KBNode]:
+        pass
+    
+    @abc.abstractmethod
+    def out_dict2(self, node_id: int, edge_type: KBEdgeType, 
+                  edge_filters: tuple, key: str, direction: KBEdgeDirection, 
+                  direct=True) -> dict[str, KBNode]:
         pass
     
     @abc.abstractmethod
@@ -198,6 +205,7 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple = None, key: str = 'name', direction: KBEdgeDirection = KBEdgeDirection.OUT, 
                  direct=True) -> dict[str, KBNode]:
+        """ Takes names from the edges """
         left_arr = "-" if direction == KBEdgeDirection.OUT else "<-"
         right_arr = "->" if direction == KBEdgeDirection.OUT else "-"
         
@@ -205,6 +213,20 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
             f"""MATCH (a){left_arr}[r:{edge_type.value}]{right_arr}(b) WHERE id(a)={int(node_id)} RETURN r, b""")
 
         return {edge['name']: KBNode.create(node) for edge, node in results}
+    
+    @functools.cache
+    def out_dict2(self, node_id: int, edge_type: KBEdgeType, 
+                 edge_filters: tuple = None, key: str = 'name', direction: KBEdgeDirection = KBEdgeDirection.OUT, 
+                 direct=True) -> dict[str, KBNode]:
+        """ Takes names from the nodes """
+        left_arr = "-" if direction == KBEdgeDirection.OUT else "<-"
+        right_arr = "->" if direction == KBEdgeDirection.OUT else "-"
+        
+        results, columns = db.cypher_query(
+            f"""MATCH (a){left_arr}[r:{edge_type.value}]{right_arr}(b) WHERE id(a)={int(node_id)} RETURN b""")
+
+        nodes = [KBNode.create(result[0]) for result in results]
+        return {node.data['name']: node for node in nodes}
     
     @functools.cache
     def find_nodes(self, node_type: KBNodeType, filters: tuple) -> list[KBNode]:

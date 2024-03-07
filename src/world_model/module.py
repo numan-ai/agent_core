@@ -17,7 +17,7 @@ class WorldModel(AgentModule):
         self.nodes = []
         self.edges: list[WorldModelEdge] = []
         self.associative_graph = AssociativeGraph([], bidirectional=False)
-        
+
         self.node_by_id = {}
         
     def get_instance(self, node_id: str) -> 'Instance':

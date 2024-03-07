@@ -73,7 +73,6 @@ class InstanceFieldsView:
         result = {}
         
         for field in kb_fields:
-            breakpoint()
             result[field.name] = self._instance.world_model.get_node(field.end)
         
     def __getattr__(self, name: str):

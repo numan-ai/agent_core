@@ -4,6 +4,7 @@ from src.decision_maker import DecisionMaker
 from src.action_manager import ActionManager
 from src.world_model import WorldModel
 from src.knowledge_base import KnowledgeBase
+from src.unified_graph.graph import UGraph
 
 
 class AgentCore:
@@ -13,6 +14,12 @@ class AgentCore:
         self.decision_maker = DecisionMaker(self)
         self.world_model = WorldModel(self)
         self.action_manager = ActionManager(self)
+        
+        self.ugi = UGraph(
+            knowledge_base=self.knowledge_base,
+            world_model=self.world_model,
+        )
+        self.action_manager.interpreter.global_vars["ugi"] = self.ugi
         
         self.modules = [
             self.input_processor,
