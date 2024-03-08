@@ -45,13 +45,11 @@ def test_disconnect(world):  # Not sure if steps should be considered here
 
     btn.interact("Press")
 
-    result_1 = api.probe_pin(led.input_pin) == 1
+    assert api.probe_pin(led.input_pin) == 1
 
     api.disconnect(1,2)
 
-    result_2 = api.probe_pin(led.input_pin) == 0
-
-    assert result_1 and result_2
+    assert api.probe_pin(led.input_pin) == 0
 
 
 def test_stay_pressed(world):
@@ -59,38 +57,31 @@ def test_stay_pressed(world):
     btn = api.create("Button")
     btn.interact("PressDown")
 
-    result_1 = api.probe_pin(btn.output_pin) == 1
+    assert api.probe_pin(btn.output_pin) == 1
 
     world.step()
 
-    result_2 = api.probe_pin(btn.output_pin) == 1
-
-    assert result_1 and result_2
+    assert api.probe_pin(btn.output_pin) == 1
 
 
 def test_clock(world): # Clock's output_pin should start in 0 and oscilate between 0 | 1 every step
     api = world.api
     clock = api.create("Clock")
 
-    empty = []
     for i in range(10):
-        empty.append(api.probe_pin(clock.output_pin) == i%2)
+        assert api.probe_pin(clock.output_pin) == i%2
         world.step()
-    
-    assert empty
 
 
 def test_lever(world):
     api = world.api
     switch = api.create("Switch")
 
-    result_1 = api.probe_pin(switch.output_pin) == 0
+    assert api.probe_pin(switch.output_pin) == 0
 
     switch.interact("Press")
 
-    result_2 = api.probe_pin(switch.output_pin) == 1
-
-    assert result_1 and result_2
+    assert api.probe_pin(switch.output_pin) == 1
 
 
 def test_AND_gate(world):
@@ -128,12 +119,10 @@ def test_password(world):
     api.connect(1,3)
     api.connect(2,3) 
 
-    result_1 = api.probe_pin(gate_NOT.output_pin) == 1
+    assert api.probe_pin(gate_NOT.output_pin) == 1
 
     button_1.interact("Press")
-    result_2 = api.probe_pin(gate_NOT.output_pin) == 1
+    assert api.probe_pin(gate_NOT.output_pin) == 1
 
     button_2.interact("Press")
-    result_3 = api.probe_pin(gate_NOT.output_pin) == 0
-
-    assert result_1 and result_2 and result_3
+    assert api.probe_pin(gate_NOT.output_pin) == 0
