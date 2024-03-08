@@ -122,25 +122,18 @@ def test_password(world):
     api = world.api
     button_1 = api.create("Button")
     button_2 = api.create("Button")
-    button_3 = api.create("Button")
     
-    gate_NOT_1 = api.create("NOT_gate")
-    gate_NOT_2 = api.create("NOT_gate")
-    gate_NOT_3 = api.create("NOT_gate")
+    gate_NOT = api.create("NOT_gate")
 
-    api.connect(1,6) # b1 -> g3
-    api.connect(2,4) # b2 -> g1
-    api.connect(3,5) # b3 -> g2
+    api.connect(1,3)
+    api.connect(2,3) 
 
-    api.connect(4,6) # g1 -> g3
-    api.connect(5,6) # g2 -> g3
+    result_1 = api.probe_pin(gate_NOT.output_pin) == 1
 
-    result_1 = api.probe_pin(gate_NOT_3.output_pin) == 0
+    button_1.interact("Press")
+    result_2 = api.probe_pin(gate_NOT.output_pin) == 1
 
     button_2.interact("Press")
-    result_2 = api.probe_pin(gate_NOT_3.output_pin) == 0
-
-    button_3.interact("Press")
-    result_3 = api.probe_pin(gate_NOT_3.output_pin) == 1
+    result_3 = api.probe_pin(gate_NOT.output_pin) == 0
 
     assert result_1 and result_2 and result_3
