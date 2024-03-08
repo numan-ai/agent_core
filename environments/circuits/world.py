@@ -48,9 +48,10 @@ class Button(Component):
             raise ValueError(f"Unknown action: {action}")
         
     def step(self):
-        self.world.pin_values[self.output_pin] = int(min(max(self.power, 0), 1))
         if self.power > 0:
             self.power -= 1
+        self.world.pin_values[self.output_pin] = int(min(max(self.power, 0), 1))
+
             
             
             
@@ -126,6 +127,9 @@ class CircuitAPI:
     
     def connect(self, pin_a: int, pin_b: int):
         self.__world.wires.append((pin_a, pin_b))
+
+    def disconnect(self, pin_a: int, pin_b: int):
+        raise NotImplementedError()
     
     def interact(self, component_id: int, action: str):
         try:
