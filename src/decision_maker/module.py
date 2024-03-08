@@ -7,6 +7,18 @@ from agci.sst import Graph
 
 
 class DecisionMaker(AgentModule):
+    """ Takes in events and builds a plan of action. 
+    Each new plan is appended at the end of the current plan.
+    We might want to add an event manager module that will
+        handle the logic of ignoring events that are not relevant.
+    Before building a plan we are looking for a reaction for the event.
+    Example of a reaction to an event:
+        event: GreetingFromHuman
+        reaction: GreetHuman
+    Then we are looking for a task to execute the reaction.
+    Reaction task is associated with a concept of the reaction with
+        an edge of type REACTION.
+    """
     def __init__(self, core) -> None:
         super().__init__(core)
         self.plan: Graph = Graph([], [])

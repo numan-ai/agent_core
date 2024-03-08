@@ -2,6 +2,8 @@ import uuid
 from typing import Optional
 from dataclasses import dataclass, field
 
+import agci.sst.entities
+
 from src.knowledge_base.module import (
     KBNode, 
     KBEdgeType,
@@ -99,7 +101,14 @@ class UKBFieldNode(UNode):
             graph=self.graph,
             underlying=result[0],
         )
+        
+    def get_setters(self):
+        raise NotImplementedError()
     
+    
+class UACNode(UNode):
+    underlying: agci.sst.entities.FunctionEntity
+
     
 class UWMNode(UNode):
     underlying: Instance
@@ -173,15 +182,20 @@ class UGraph:
         self,
         knowledge_base: BaseKnowledgeBase,
         world_model: WorldModel,
+        ac_graph: agci.sst.entities.Graph,
     ) -> None:
         self.knowledge_base = knowledge_base
         self.world_model = world_model
+        self.ac_graph = ac_graph
         
         self.__kb_ids_to_ug_ids = {}
         self.__ug_ids_to_kb_ids = {}
         
         self.__wm_ids_to_ug_ids = {}
         self.__ug_ids_to_wm_ids = {}
+        
+        self.__ac_ids_to_ug_ids = {}
+        self.__ug_ids_to_ac_ids = {}
         
     def get_concept(self, concept_name) -> Optional[UKBConceptNode]:
         kb_node: KBNode = self.knowledge_base.find_concept(concept_name, should_raise=False)

@@ -41,12 +41,12 @@ def react_on_user_message(sentence: HowManyThereAreQuestion(concept=PluralConcep
     # get all instances of the class
     instances = list_world_model_instances(instance_concept)
     print(len(instances))
-    
+
 
 def find_instance_concept_for_class_concept(concept: Concept):
     return Instance(concept.concept_name.replace("Class", ""))
-    
-    
+
+
 def list_world_model_instances(concept: Concept):
     nodes = []
     
@@ -64,12 +64,12 @@ def list_world_model_instances(concept: Concept):
     #         nodes.append(node)
             
     # return nodes
-    
-    
+
+
 def act_on_entity(entity: CircuitButton, act: PressAct):
     # send the "Press" action to the real world button
     api.interact(entity.fields.id, "Press")
-    
+
 
 def resolve_reference(reference: DefiniteEntityReference):
     class_concept = reference.fields.concept
@@ -118,8 +118,8 @@ def evaluate_expression(expression: BinaryMathExpression(op=LessThan, left=Numbe
 
 def act_on_entity(entity: CircuitLED, act: PutIntoStateAct):
     achieve_state_goal(entity=entity, state=act.fields.state)
-    
-    
+
+
 def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
     field_node = kb_find_field_node(entity=entity, concept=state)
     task_node = kb.out(field_node.id, KBEdgeType.FIELD_GETTER)[0]

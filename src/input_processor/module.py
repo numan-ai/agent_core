@@ -3,6 +3,8 @@ from src.world_model import Instance
 
 
 class InputProcessor(AgentModule):
+    """ Processes raw data and sends events to the decision maker.
+    """
     started = False
     
     def __init__(self, core) -> None:
