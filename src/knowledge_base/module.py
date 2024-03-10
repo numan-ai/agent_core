@@ -1,18 +1,15 @@
-from typing import Optional
-from src.base_module import AgentModule
-
-
 import os
 import abc
 import enum
 import functools
-
+from typing import Optional
 from dataclasses import dataclass, field
 
 from neomodel import db, config
 from dotenv import load_dotenv
 
 from .concept import Concept
+from src.base_module import AgentModule
 
 
 load_dotenv()

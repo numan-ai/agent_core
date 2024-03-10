@@ -110,6 +110,7 @@ class InstanceFieldsView:
                 raise AttributeError(f"Instance {self._instance} has no attribute {name}")
                 
             if isinstance(value, WorldModelNode):
+                wm.add(value)
                 # remove old __value__ edge
                 wm.remove_out_edges(field.id, "__value__")
                 # create a new __value__ edge

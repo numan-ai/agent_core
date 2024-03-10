@@ -5,20 +5,20 @@ class Component(abc.ABC):
     def __init__(self, world, component_id) -> None:
         self.world = world
         self.id = component_id
-        self.input_pins: list[int] = []
-        self.output_pins: list[int] = []
+        self.input_pin_ids: list[int] = []
+        self.output_pin_ids: list[int] = []
     
     @property
-    def input_pin(self):
-        if len(self.input_pins) != 1:
+    def input_pin_id(self):
+        if len(self.input_pin_ids) != 1:
             raise ValueError("Component must have exactly one input pin")
-        return self.input_pins[0]
+        return self.input_pin_ids[0]
     
     @property
-    def output_pin(self):
-        if len(self.output_pins) != 1:
+    def output_pin_id(self):
+        if len(self.output_pin_ids) != 1:
             raise ValueError("Component must have exactly one output pin")
-        return self.output_pins[0]
+        return self.output_pin_ids[0]
     
     @abc.abstractmethod
     def interact(self, action: str = "Press"):
@@ -32,16 +32,16 @@ class Button(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
         self.power = 0.0
-        self.output_pins.append(self.world.get_next_pin_id())
-        world.pin_values[self.output_pin] = 0
+        self.output_pin_ids.append(self.world.get_next_pin_id())
+        world.pin_values[self.output_pin_id] = 0
         
     def interact(self, action: str = "Press"):
         if action == "Press":
             self.power = 1.0
-            self.world.pin_values[self.output_pin] = 1
+            self.world.pin_values[self.output_pin_id] = 1
         elif action == "PressDown":
             self.power = float('int')
-            self.world.pin_values[self.output_pin] = 1
+            self.world.pin_values[self.output_pin_id] = 1
         elif action == "PressUp":
             self.power = 0.0
         else:
@@ -50,7 +50,7 @@ class Button(Component):
     def step(self):
         if self.power > 0:
             self.power -= 1
-        self.world.pin_values[self.output_pin] = int(min(max(self.power, 0), 1))
+        self.world.pin_values[self.output_pin_id] = int(min(max(self.power, 0), 1))
 
             
             
@@ -59,25 +59,25 @@ class Switch(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
         self.power = 0
-        self.output_pins.append(self.world.get_next_pin_id())
-        world.pin_values[self.output_pin] = 0
+        self.output_pin_ids.append(self.world.get_next_pin_id())
+        world.pin_values[self.output_pin_id] = 0
         
     def interact(self, action: str = "Press"):
         if action == "Press":
             self.power = 1 - self.power
-            self.world.pin_values[self.output_pin] = self.power
+            self.world.pin_values[self.output_pin_id] = self.power
         else:
             raise ValueError(f"Unknown action: {action}")
         
     def step(self):
-        self.world.pin_values[self.output_pin] = min(max(self.power, 0), 1)
+        self.world.pin_values[self.output_pin_id] = min(max(self.power, 0), 1)
 
 
 class LED(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
-        self.input_pins.append(self.world.get_next_pin_id())
-        world.pin_values[self.input_pin] = 0
+        self.input_pin_ids.append(self.world.get_next_pin_id())
+        world.pin_values[self.input_pin_id] = 0
         
     def interact(self, action: str = "Press"):
         raise ValueError("LED cannot be interacted with")

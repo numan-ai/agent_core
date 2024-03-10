@@ -69,5 +69,4 @@ class DecisionMaker(AgentModule):
         if not self.plan.get_nodes():
             self.plan = new_plan
         else:
-            breakpoint()
-            pass
+            raise NotImplementedError("Appending plans is not implemented")

@@ -18,7 +18,7 @@ class Concept:
             cid.append('{')
             for key, value in sorted(self.fields.items(), key=lambda x: x[0]):
                 if isinstance(value, list):
-                    breakpoint()
+                    raise NotImplementedError()
                 if isinstance(value, Concept):
                     cid.append(f'{key}={value.get_cid()},')
                 else:
