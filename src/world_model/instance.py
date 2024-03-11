@@ -161,7 +161,6 @@ def find_action_concept_for_numeric_equality(goal):
         return "DoNothing"
     
 
-
 def find_the_next_action_using_associations_only(goal):
     action_concept = find_action_concept_for_numeric_equality(goal)
     instance = goal.fields.value_to_change
