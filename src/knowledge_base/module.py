@@ -23,7 +23,7 @@ config.DATABASE_URL = f"bolt://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}"
 
 
 class KBEdgeType(enum.Enum):
-    '''
+    """
     When a class inherits from Enum it becomes a datatype of paired data.
     
     No need to instantiate it, you can use it directly
@@ -31,7 +31,7 @@ class KBEdgeType(enum.Enum):
 
     To access the value add .value to the end like so:
     KBEdgeType.TASK.value
-    '''
+    """
     # Concept -> Concept
     PARENT = "parent"
     # Concept -> Concept
@@ -59,9 +59,9 @@ class KBNodeType(enum.Enum):
     
     
 class KBEdgeDirection(enum.Enum):
-    '''
+    """
     enum.auto() guarantees that each value will be unique
-    '''
+    """
     OUT = enum.auto()
     IN = enum.auto()
     ANY = enum.auto()
@@ -69,30 +69,30 @@ class KBEdgeDirection(enum.Enum):
 
 @dataclass
 class KBNode:
-    '''
+    """
     @dataclass decorator saves you boilerplate code, lines belows are
     equivalent to doing all the __init__ and self.var = var, etc.
 
     This KBNode class is what the KB will use to manage knowledge
-    '''
+
+
+    field is being used in here to assign a default value of an empty dict,
+    it's being used because otherwise every instance of KBNode would share
+    the same default dictionary
+    """
     id: int
     label: str
     data: dict
     metadata: dict = field(repr=False, default_factory=dict)
-    '''
-    field is being used in here to assign a default value of an empty dict,
-    it's being used because otherwise every instance of KBNode would share
-    the same default dictionary
-    '''
     
     @classmethod
     def create(cls, raw_node):
-        '''
+        """
         raw_node is a Neo4j Node in Cypher_Query syntax
 
         I think guidelines indicate that it should be named
         from_raw_node, but create might be more appropiate and intuitive
-        '''
+        """
         node_data = dict(raw_node)
         metadata = node_data.pop('_meta')
 
@@ -114,10 +114,10 @@ class KBEdge:
     
 
 class KBBaseError(Exception):
-    '''
+    """
     When a class inherits from Exception it turns into a custom Exception
     class
-    '''
+    """
     pass    
 
     
@@ -130,13 +130,13 @@ class KBNotFoundError(Exception):
 
 
 class BaseKnowledgeBase(abc.ABC):
-    '''
+    """
     Inheritance from ABC is just so we can use @abstractmethod
-    '''
+    """
     def find_concept(self, cid: str, should_raise: bool = True) -> KBNode:
-        '''
+        """
         Finds and returns a KBNode, I ignore what cid should be
-        '''
+        """
         concept_name = Concept.get_name(cid)
         nodes = self.find_nodes(KBNodeType.CONCEPT, (
             ("name", concept_name),
@@ -177,13 +177,12 @@ class BaseKnowledgeBase(abc.ABC):
             direct=direct,
             direction=KBEdgeDirection.IN,
         )
-        # List of KBNodes
     
-    '''
+    """
     All these @abstractmethod mean that the child has to define those
     methods itself, otherwise it will raise a TypeError
     I think we can ignore them since child will overwrite them
-    '''
+    """
     @abc.abstractmethod
     def out(self, node_id: int, edge_type: KBEdgeType, 
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
@@ -224,10 +223,10 @@ class BaseKnowledgeBase(abc.ABC):
 
 
 def dict_to_fields(dct: dict):
-    '''
+    """
     Turns given dict into a string written like a dict,
     only change is that it gets rid of keys's quotation marks
-    '''
+    """
     result = ""
     
     for i, (key, value) in enumerate(dct.items()):
@@ -241,21 +240,21 @@ def dict_to_fields(dct: dict):
 
 
 class KnowledgeBase(BaseKnowledgeBase, AgentModule):
-    '''
+    """
     Classes separated by commas indicates a multiple inheritance
 
     What @cache does is remembering the result of a previous computation.
     f(n) is stored so when called again there's no need to run the function
-    '''
+    """
     @functools.cache
     def out(self, node_id: int, edge_type: KBEdgeType, 
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
             direct=True) -> list[KBNode]:
-        '''
+        """
         You specify a node (a) by its id, this method is going to return
         all nodes (b) that are connected to (a) meeting the other 3
         arguments of edge type, edge filter and direction
-        '''
+        """
 
         # if direction == KBEdgeDirection.OUT points edge from a to b
         left_arr = "-" if direction == KBEdgeDirection.OUT else "<-"
@@ -272,13 +271,13 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple = None, key: str = 'name', direction: KBEdgeDirection = KBEdgeDirection.OUT, 
                  direct=True) -> dict[str, KBNode]:
-        '''
+        """
         Almost the same as above, difference being:
          + returns it in a dict format where
            + key is the name of the edge
            + value is (b)
          - No Edge filter
-        '''
+        """
         left_arr = "-" if direction == KBEdgeDirection.OUT else "<-"
         right_arr = "->" if direction == KBEdgeDirection.OUT else "-"
         
@@ -291,12 +290,12 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     def out_dict2(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple = None, key: str = 'name', direction: KBEdgeDirection = KBEdgeDirection.OUT, 
                  direct=True) -> dict[str, KBNode]:
-        '''
+        """
         Searches like above but just returns (b)
 
         nodes is a list of KBNodes based on (b)'s
         returned dict is {KBNode.name:KBNode}
-        '''
+        """
         left_arr = "-" if direction == KBEdgeDirection.OUT else "<-"
         right_arr = "->" if direction == KBEdgeDirection.OUT else "-"
         
@@ -308,7 +307,7 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     
     @functools.cache
     def find_nodes(self, node_type: KBNodeType, filters: tuple) -> list[KBNode]:
-        '''Find all nodes that match the label and filters'''
+        """Find all nodes that match the label and filters"""
         filters = dict_to_fields(dict(filters))
         
         node_label = node_type.value
@@ -321,7 +320,7 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
         ]
 
     def get_node(self, node_id: int) -> KBNode:
-        '''Search node by id'''
+        """Search node by id"""
         results, columns = db.cypher_query(
             f"""MATCH (a) WHERE id(a)={int(node_id)} RETURN a""")
 
@@ -370,10 +369,10 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
         
     def upsert_edge(self, edge_label: str, start_node_id: int, end_node_id: int, data: dict) -> KBEdge:
         data = dict_to_fields(data)
-        '''
+        """
         I think this creates edges but only if they don't exist in that
         specific configuration
-        '''
+        """
         results, columns = db.cypher_query(
             f"""MATCH (a), (b) WHERE id(a)={int(start_node_id)} AND id(b)={int(end_node_id)} MERGE (a)-[r:{edge_label} {data}]->(b) RETURN r""")
 
@@ -387,7 +386,7 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
         
     def update_node_data(self, node_id: int, data: dict):
         data = dict_to_fields(data)
-        '''Changes the properties of a node'''
+        """Changes the properties of a node"""
         results, columns = db.cypher_query(
             f"""MATCH (a) WHERE id(a)={int(node_id)} SET a += {data} RETURN a""")
 
