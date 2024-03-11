@@ -6,8 +6,10 @@ from src.world_model.wm_entities import InstanceReference
 def main():
     core = AgentCore()
     
-    btn = core.world_model.add(Instance("Button", {
-        "output_pin": Instance("Number", {"value": 0}),
+    btn = core.world_model.add(Instance("CircuitButton", {
+        "output_pin": Instance("CircuitPin", {
+            "value": 0,
+        }),
     }, instance_id="btn-1"))
     
     core.input_processor.send_event(Instance("ActOnEntityEvent", {

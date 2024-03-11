@@ -85,26 +85,19 @@ def resolve_reference(reference: DefiniteEntityReference):
     # return Instance("Button", {"id": 0})
 
 
-def process_act_on_entity_event(entity: CurcuitButton, act: PressAct):
-    entity.fields.output_pin.fields.value = 1
-    set_field(entity, "OutputPin", 1)
-    set_field(entity, "output_pin", 1)
-    set_field(FieldOfEntity(entity, "OutputPin"), 1)
+def process_act_on_entity_event(entity: CircuitButton, act: PressAct):
+    set_field(entity.fields.output_pin, "value", 1)
 
 
-def process_act_on_entity_event(entity: CurcuitLED, act: PressAct):
-    pass
+def process_act_on_entity_event(entity: CircuitLED, act: PressAct):
+    return 1
 
 
-def set_field(field: FieldOfEntity, value: Concept):
-    pass
-
-
-def get_field(entity: CurcuitLED, field: StateTurnedOn):
+def get_field(entity: CircuitLED, field: StateTurnedOn):
     return entity.fields.input_pin.fields.value == 1
 
 
-def get_field_a(entity: CurcuitLED, field: StateTurnedOn):
+def get_field_a(entity: CircuitLED, field: StateTurnedOn):
     return entity.fields.input_pin.fields.value == 1
 
 
@@ -127,13 +120,15 @@ def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
     func_entity = interpreter.global_vars[task_name]
     graph = func_entity.dispatch_options[0].graph
     print(graph)
-    debug(graph)
+    # debug(graph)
     
     graph_instance = Instance("AGCI_Return", {
         "value": Instance("AGCI_CompareOperation", {
             "left": Instance("AGCI_GetField", {
                 "entity": entity,
-                "field_name": "input_pin",
+                "field_name": Instance("String", {
+                    "value": "input_pin",
+                }),
             }),
             "right": Instance("Number", {
                 "value": 1,
@@ -142,16 +137,58 @@ def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
     })
     
     goal_instance = Instance("GoalMakeLeftEqualToRight", {
-        "left": Instance("EntityFieldValueByName", {
+        "left": Instance("EntityField", {
             "entity": entity,
-            "field_name": "input_pin",
+            "field_name": Instance("String", {
+                "value": "input_pin",
+            }),
         }),
         "right": Instance("Number", {
             "value": 1,
         }),
     })
     
+    achieve_linear_goal(goal=goal_instance)
     
+
+def achieve_linear_goal(goal: GoalMakeLeftEqualToRight):
+    right_value = evaluate(goal.fields.right)
+    
+    while True:
+        left_value = evaluate(goal.fields.left)
+        
+        distance = measure_linear_goal_distance(left_value, right_value)
+        print('distance', distance)
+        
+        if distance == 0:
+            return
+        if distance < 0:
+            increase(goal.fields.left)
+        else:
+            decrease(goal.fields.left)
+
+
+def measure_linear_goal_distance(left_value: Number, right_value: Number):
+    return left_value.fields.value - right_value.fields.value
+
+
+def increase(expression: EntityField):
+    raise NotImplementedError()
+    set_field(expression.fields.entity, expression.fields.field_name, Instance("Number", {
+        "value": 1,
+    }))
+
+
+def evaluate(expression: EntityField):
+    return evaluate(expression.fields.entity.fields[
+        expression.fields.field_name.fields.value
+    ])
+    
+
+def evaluate(expression: Number):
+    return expression
+
+
 def kb_find_field_node(entity: CircuitLED, concept: TurnedOnState):
     concept_node = kb.find_concept(entity.concept_name)
     fields = kb.out(concept_node.id, KBEdgeType.FIELD_NODE)

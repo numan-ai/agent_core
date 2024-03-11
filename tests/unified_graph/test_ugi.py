@@ -71,7 +71,7 @@ KB_EDGES = [
 AC_CODE = """
 def get_field(concept: Person, field: IsJohn):
     # set_field(concept, "PersonNameField", "John")
-    return get_field(concept, "PersonNameField", "John")
+    return get_field(concept, "PersonNameField")
     
     
 def change_name_to_mike(concept: Person):
@@ -187,13 +187,12 @@ def test_wm_instance_field_reverse(ugi):
     assert ug_apple.underlying.id == "apple-1"
 
 
-def test_wm_instance_field_reverse(ugi):
+def test_am_instance_field_setters(ugi):
     ug_concept = ugi.get_concept("Person")
     assert ug_concept is not None
     
     ug_field = ug_concept.get_field("name")
     assert ug_field is not None
     
-    ug_functions = ug_field.get_setters()
-    assert len(ug_functions) == 1
-    assert ug_functions[0]
+    ug_nodes = ug_field.get_setters("PersonNameField")
+    assert len(ug_nodes) == 1

@@ -22,7 +22,7 @@ def main():
     agent.input_processor.send_event(Instance("UserSaidEvent", {
         "sentence": Instance("ActOnReferencedEntityStatement", {
             "reference": Instance("DefiniteEntityReference", {
-                "concept": Instance("ButtonClass"),
+                "concept": Instance("CircuitButtonClass"),
             }),
             "act": Instance("PressAct"),
         }),

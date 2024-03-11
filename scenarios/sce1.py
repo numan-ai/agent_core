@@ -33,7 +33,7 @@ def main():
     # don't pass the world, so that the button does not become unpressed
     agent.run(world=None)
     
-    assert world.api.probe_pin(rw_btn.output_pin) == 1, "Button was not pressed"
+    assert world.api.probe_pin(rw_btn.output_pin_id) == 1, "Button was not pressed"
 
 
 if __name__ == "__main__":

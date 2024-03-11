@@ -18,6 +18,7 @@ class AgentCore:
         self.ugi = UGraph(
             knowledge_base=self.knowledge_base,
             world_model=self.world_model,
+            ac_graph=self.action_manager.interpreter.combined_graph,
         )
         self.action_manager.interpreter.global_vars["ugi"] = self.ugi
         

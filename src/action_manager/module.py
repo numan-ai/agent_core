@@ -34,6 +34,15 @@ def debug(*args):
     pass
 
 
+def set_field(entity, field, value):
+    if isinstance(field, str):
+        field_name = field
+    else:
+        field_name = field.fields.value
+    entity.fields[field_name] = value
+
+
+
 class ActionManager(AgentModule):
     def __init__(self, core) -> None:
         super().__init__(core)
@@ -51,6 +60,7 @@ class ActionManager(AgentModule):
             'KBEdgeType': KBEdgeType,
             'KBEdgeDirection': KBEdgeDirection,
             'debug': debug,
+            'set_field': set_field,
         }, core)
         self.interpreter.global_vars['interpreter'] = self.interpreter
         self.interpreter.load_file('./agent_code/ac_main.py')
