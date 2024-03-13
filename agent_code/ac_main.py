@@ -86,19 +86,32 @@ def resolve_reference(reference: DefiniteEntityReference):
 
 
 def process_act_on_entity_event(entity: CircuitButton, act: PressAct):
-    set_field(entity.fields.output_pin, "value", 1)
+    model_act_on_entity(entity, act)
 
 
-def process_act_on_entity_event(entity: CircuitLED, act: PressAct):
-    return 1
+def model_act_on_entity(entity: CircuitButton, act: PressAct):
+    current_value = get_field(entity, String("output_pin"))
+    new_value = current_value + 1
+    set_field(entity, String("output_pin"), new_value)
+
+
+# def model_act_on_entity(entity: CircuitButton, act: PressAct):
+#     pin = get_field(entity, String("output_pin"))
+#     set_field(pin, String("value"), Number(1))
 
 
 def get_field(entity: CircuitLED, field: StateTurnedOn):
-    return entity.fields.input_pin.fields.value == 1
+    pin = get_field(entity, String("input_pin"))
+    pin_value = get_field(pin, String("value"))
+    return is_equal(pin_value, Number(1))
+
+
+def get_field(entity: CircuitSwitch, field: StateTurnedOn):
+    return entity.fields.output_pin.fields.value.fields.value == 1
 
 
 def get_field_a(entity: CircuitLED, field: StateTurnedOn):
-    return entity.fields.input_pin.fields.value == 1
+    return entity.fields.input_pin.fields.value.fields.value == 1
 
 
 def evaluate_expression(expression: BinaryMathExpression(op=GreaterThan, left=Number, right=Number)):
@@ -174,9 +187,9 @@ def measure_linear_goal_distance(left_value: Number, right_value: Number):
 
 def increase(expression: EntityField):
     raise NotImplementedError()
-    set_field(expression.fields.entity, expression.fields.field_name, Instance("Number", {
-        "value": 1,
-    }))
+    # set_field(expression.fields.entity, expression.fields.field_name, Instance("Number", {
+    #     "value": 1,
+    # }))
 
 
 def evaluate(expression: EntityField):
@@ -198,3 +211,13 @@ def kb_find_field_node(entity: CircuitLED, concept: TurnedOnState):
             return field
         
     raise ValueError("Field not found")
+
+
+def model_wire_step(wire: CircuitWire):
+    pin_a = get_field(wire, String("pin_a"))
+    pin_a_value = get_field(pin_a, String("value"))
+    pin_b = get_field(wire, String("pin_b"))
+    pin_b_value = get_field(pin_b, String("value"))
+    wire_value = max(pin_a_value, pin_b_value)
+    set_field(pin_a, String("value"), wire_value)
+    set_field(pin_b, String("value"), wire_value)

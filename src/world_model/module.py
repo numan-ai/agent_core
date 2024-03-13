@@ -129,7 +129,7 @@ class WorldModel(AgentModule):
         ]
             
     def copy(self):
-        new_world = WorldModel()
+        new_world = WorldModel(self.core)
         for node in self.nodes:
             node_copy = node.copy()
             node_copy.world_model = new_world

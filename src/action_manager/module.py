@@ -1,3 +1,5 @@
+import random
+
 import agci
 import agci.interpreter
 
@@ -21,6 +23,12 @@ class InterpreterWithConceptDispatch(agci.StepInterpreter):
         if isinstance(arg_value, InstanceReference):
             arg_value = self.core.world_model.get_instance(arg_value.instance_id)
             
+        if isinstance(arg_value, (float, int)):
+            arg_value = Instance("Number", {"value": arg_value})
+            
+        if isinstance(arg_value, str):
+            arg_value = Instance("String", {"value": arg_value})
+            
         assert isinstance(arg_value, Instance)
         
         arg_concept = arg_value.get_concept()
@@ -32,6 +40,18 @@ class InterpreterWithConceptDispatch(agci.StepInterpreter):
 def debug(*args):
     breakpoint()
     pass
+
+
+def number_to_instance(number):
+    return Instance("Number", {
+        "value": number,
+    })
+    
+    
+def string_to_instance(string):
+    return Instance("String", {
+        "value": string,
+    })
 
 
 def set_field(entity, field, value):
@@ -50,7 +70,10 @@ class ActionManager(AgentModule):
         self.is_head_initialized = False
         self.interpreter = InterpreterWithConceptDispatch({
             'len': len,
+            'abs': abs,
             'print': print,
+            'range': range,
+            'random': random,
             'isinstance': isinstance,
             'kb': core.knowledge_base,
             'wm': core.world_model,
@@ -61,10 +84,13 @@ class ActionManager(AgentModule):
             'KBEdgeDirection': KBEdgeDirection,
             'debug': debug,
             'set_field': set_field,
+            'Number': number_to_instance,
+            'String': string_to_instance,
         }, core)
         self.interpreter.global_vars['interpreter'] = self.interpreter
         self.interpreter.load_file('./agent_code/ac_main.py')
         self.interpreter.load_file('./agent_code/ac_knowledge_base.py')
+        self.interpreter.load_file('./agent_code/ac_code_reasoning.py')
         self.done = False
         
     def step(self):
