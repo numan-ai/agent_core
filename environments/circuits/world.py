@@ -2,8 +2,8 @@ import abc
 
 
 class Component(abc.ABC):    
-    def __init__(self, world, component_id) -> None:
-        self.world = world
+    def __init__(self, world: 'CircuitWorld', component_id) -> None:
+        self.world: CircuitWorld = world
         self.id = component_id
         self.input_pin_ids: list[int] = []
         self.output_pin_ids: list[int] = []
@@ -24,6 +24,22 @@ class Component(abc.ABC):
     def interact(self, action: str = "Press"):
         pass
     
+    def add_input_pin(self):
+        pin_id = self.world.get_next_pin_id()
+        self.input_pin_ids.append(pin_id)
+        self.world.pin_values[pin_id] = 0
+        self.world.input_pin_ids.add(pin_id)
+        
+        return pin_id
+        
+    def add_output_pin(self):
+        pin_id = self.world.get_next_pin_id()
+        self.output_pin_ids.append(pin_id)
+        self.world.pin_values[pin_id] = 0
+        self.world.output_pin_ids.add(pin_id)
+        
+        return pin_id
+        
     def step(self):
         pass
     
@@ -32,15 +48,14 @@ class Button(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
         self.power = 0.0
-        self.output_pin_ids.append(self.world.get_next_pin_id())
-        world.pin_values[self.output_pin_id] = 0
+        self.add_output_pin()
         
     def interact(self, action: str = "Press"):
         if action == "Press":
             self.power = 1.0
             self.world.pin_values[self.output_pin_id] = 1
         elif action == "PressDown":
-            self.power = float('int')
+            self.power = float('inf')
             self.world.pin_values[self.output_pin_id] = 1
         elif action == "PressUp":
             self.power = 0.0
@@ -53,14 +68,59 @@ class Button(Component):
         self.world.pin_values[self.output_pin_id] = int(min(max(self.power, 0), 1))
 
             
-            
-            
+class NotGate(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.add_input_pin()
+        self.add_output_pin()
+        world.pin_values[self.output_pin_id] = 1
+        
+    def interact(self, action: str):
+        raise ValueError("NotGate cannot be interacted with")
+        
+    def step(self):
+        input_value = min(max(self.world.pin_values[self.input_pin_id], 0), 1)
+        value = 1 - input_value
+        self.world.pin_values[self.output_pin_id] = value
+        
+        
+class AndGate(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.add_input_pin()
+        self.add_input_pin()
+        self.add_output_pin()
+        
+    def interact(self, action: str):
+        raise ValueError("AndGate cannot be interacted with")
+        
+    def step(self):
+        value = self.world.pin_values[self.input_pin_ids[0]] * \
+            self.world.pin_values[self.input_pin_ids[1]]
+        self.world.pin_values[self.output_pin_id] = value
+        
+        
+class OrGate(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.add_input_pin()
+        self.add_input_pin()
+        self.add_output_pin()
+        
+    def interact(self, action: str):
+        raise ValueError("OrGate cannot be interacted with")
+        
+    def step(self):
+        value = self.world.pin_values[self.input_pin_ids[0]] + \
+            self.world.pin_values[self.input_pin_ids[1]]
+        self.world.pin_values[self.output_pin_id] = min(max(value, 0), 1)
+
+
 class Switch(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
         self.power = 0
-        self.output_pin_ids.append(self.world.get_next_pin_id())
-        world.pin_values[self.output_pin_id] = 0
+        self.add_output_pin()
         
     def interact(self, action: str = "Press"):
         if action == "Press":
@@ -76,11 +136,22 @@ class Switch(Component):
 class LED(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
-        self.input_pin_ids.append(self.world.get_next_pin_id())
-        world.pin_values[self.input_pin_id] = 0
+        self.add_input_pin()
         
     def interact(self, action: str = "Press"):
         raise ValueError("LED cannot be interacted with")
+
+class Clock(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.add_output_pin()
+        
+    def interact(self, action: str = "Press"):
+        raise ValueError("Clock cannot be interacted with")
+        
+    def step(self):
+        value = self.world.pin_values[self.output_pin_id]
+        self.world.pin_values[self.output_pin_id] = 1 - value
 
 
 class CircuitWorld:
@@ -90,6 +161,8 @@ class CircuitWorld:
     def __init__(self) -> None:
         self.components = {}
         self.wires = []
+        self.input_pin_ids = set()
+        self.output_pin_ids = set()
         self.pin_values = {}
         self.api = CircuitAPI(self)
         
@@ -104,9 +177,22 @@ class CircuitWorld:
         return cls.last_pin_id
     
     def step(self):
+        self._step_wires()
+        
         for comp in self.components.values():
             comp.step()
-    
+            
+    def _step_wires(self):
+        for pin_id in self.input_pin_ids:
+            connected_wires = [
+                out_id for out_id, in_id in self.wires
+                if in_id == pin_id
+            ]
+            values = [self.pin_values[out_id] for out_id in connected_wires]
+            value = max(values, default=0)
+            
+            self.pin_values[pin_id] = value
+        
     
 class CircuitAPI:
     def __init__(self, world: CircuitWorld) -> None:
@@ -120,16 +206,20 @@ class CircuitAPI:
             "Button": Button,
             "LED": LED,
             "Switch": Switch,
+            "NotGate": NotGate,
+            "AndGate": AndGate,
+            "OrGate": OrGate,
+            "Clock": Clock,
         }
         comp = component_classes[label](self.__world, self.__world.get_next_id())
         self.__world.components[comp.id] = comp
         return comp
     
-    def connect(self, pin_a: int, pin_b: int):
-        self.__world.wires.append((pin_a, pin_b))
+    def connect(self, pin_out: int, pin_in: int):
+        self.__world.wires.append((pin_out, pin_in))
 
     def disconnect(self, pin_a: int, pin_b: int):
-        raise NotImplementedError()
+        self.__world.wires.remove((pin_a, pin_b))
     
     def interact(self, component_id: int, action: str):
         try:

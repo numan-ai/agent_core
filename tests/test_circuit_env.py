@@ -20,9 +20,14 @@ def test_circuit_btn_turn_on_led(world):
     api = world.api
     btn = api.create("Button")
     led = api.create("LED")
-    api.connect(1,2)
+    api.connect(
+        btn.output_pin_id,
+        led.input_pin_id
+    )
 
     btn.interact("Press")
+    
+    world.step()
 
     assert api.probe_pin(led.input_pin_id) == 1
 
@@ -42,13 +47,21 @@ def test_circuit_disconnect(world):  # Not sure if steps should be considered he
     api = world.api
     btn = api.create("Button")
     led = api.create("LED")
-    api.connect(1, 2)
+    api.connect(
+        btn.output_pin_id,
+        led.input_pin_id
+    )
 
     btn.interact("Press")
+    world.step()
 
     assert api.probe_pin(led.input_pin_id) == 1
 
-    api.disconnect(1, 2)
+    api.disconnect(
+        btn.output_pin_id,
+        led.input_pin_id
+    )
+    world.step()
 
     assert api.probe_pin(led.input_pin_id) == 0
 
@@ -88,13 +101,22 @@ def test_circuits_switch(world):
 def test_circuits_and_gate(world):
     api = world.api
     switch_1 = api.create("Switch")
-    switch_1.interact("Press")
     switch_2 = api.create("Switch")
-    switch_2.interact("Press")
     and_gate = api.create("AndGate")
 
-    api.connect(1, 3)
-    api.connect(2, 3)
+    api.connect(
+        switch_1.output_pin_id,
+        and_gate.input_pin_ids[0]
+    )
+    api.connect(
+        switch_2.output_pin_id,
+        and_gate.input_pin_ids[1]
+    )
+    
+    switch_1.interact("Press")
+    switch_2.interact("Press")
+    
+    world.step()
 
     assert api.probe_pin(and_gate.output_pin_id) == 1
 
@@ -105,25 +127,38 @@ def test_circuits_not_gate(world):
     switch.interact("Press")
     not_gate = api.create("NotGate")
 
-    api.connect(1,2)
+    api.connect(
+        switch.output_pin_id,
+        not_gate.input_pin_id
+    )
 
     assert api.probe_pin(not_gate.output_pin_id) == 1
 
 
-def test_password(world):
+def test_circuit_wire_junction(world):
     api = world.api
-    button_1 = api.create("Button")
-    button_2 = api.create("Button")
+    button_1 = api.create("Switch")
+    button_2 = api.create("Switch")
     
-    gate_NOT = api.create("NotGate")
+    gate = api.create("NotGate")
 
-    api.connect(1,3)
-    api.connect(2,3) 
+    api.connect(
+        button_1.output_pin_id,
+        gate.input_pin_id
+    )
+    api.connect(
+        button_2.output_pin_id,
+        gate.input_pin_id
+    )
 
-    assert api.probe_pin(gate_NOT.output_pin_id) == 1
+    assert api.probe_pin(gate.output_pin_id) == 1
 
     button_1.interact("Press")
-    assert api.probe_pin(gate_NOT.output_pin_id) == 1
+    world.step()
+    
+    assert api.probe_pin(gate.output_pin_id) == 0
 
     button_2.interact("Press")
-    assert api.probe_pin(gate_NOT.output_pin_id) == 0
+    world.step()
+    
+    assert api.probe_pin(gate.output_pin_id) == 0
