@@ -1,4 +1,5 @@
 import abc
+import random
 
 
 class Component(abc.ABC):    
@@ -42,6 +43,15 @@ class Component(abc.ABC):
         
     def step(self):
         pass
+    
+    def inspect(self):
+        return f"""<{self.__class__.__name__}
+    id      = {self.id}
+    inputs  = {self.input_pin_ids}
+    outputs = {self.output_pin_ids}>"""
+    
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} id={self.id}>"
     
 
 class Button(Component):
@@ -155,10 +165,10 @@ class Clock(Component):
 
 
 class CircuitWorld:
-    last_id = 0
-    last_pin_id = 0
+    last_id = random.randrange(0, 100)
+    last_pin_id = random.randrange(0, 100)
     
-    def __init__(self) -> None:
+    def __init__(self):
         self.components = {}
         self.wires = []
         self.input_pin_ids = set()
@@ -201,6 +211,9 @@ class CircuitAPI:
     def list(self):
         return list(self.__world.components.values())
     
+    def wires(self):
+        return self.__world.wires
+    
     def create(self, label: str):
         component_classes = {
             "Button": Button,
@@ -216,6 +229,10 @@ class CircuitAPI:
         return comp
     
     def connect(self, pin_out: int, pin_in: int):
+        if pin_out not in self.__world.output_pin_ids:
+            raise ValueError(f"Pin with id {pin_out} is not an output pin")
+        if pin_in not in self.__world.input_pin_ids:
+            raise ValueError(f"Pin with id {pin_in} is not an input pin")
         self.__world.wires.append((pin_out, pin_in))
 
     def disconnect(self, pin_a: int, pin_b: int):
@@ -228,8 +245,18 @@ class CircuitAPI:
             raise ValueError(f"Component with id {component_id} does not exist")
         comp.interact(action)
     
+    def inspect(self, component_id: int):
+        try:
+            comp = self.__world.components[component_id]
+        except IndexError:
+            raise ValueError(f"Component with id {component_id} does not exist")
+        return comp.inspect()
+    
     def probe_pin(self, pin_id: int):
         try:
             return self.__world.pin_values[pin_id]
         except KeyError:
             raise ValueError(f"Pin with id {pin_id} does not exist")
+
+    def press(self, component_id: int):
+        self.interact(component_id, "Press")
