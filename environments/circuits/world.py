@@ -51,7 +51,15 @@ class Component(abc.ABC):
     outputs = {self.output_pin_ids}>"""
     
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id}>"
+        if self.input_pin_ids:
+            in_part = f" in={self.input_pin_ids}"
+        else:
+            in_part = ""
+        if self.output_pin_ids:
+            out_part = f" out={self.output_pin_ids}"
+        else:
+            out_part = ""
+        return f"<{self.__class__.__name__} id={self.id}{in_part}{out_part}>"
     
 
 class Button(Component):
