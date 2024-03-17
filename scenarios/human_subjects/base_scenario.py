@@ -1,3 +1,9 @@
+"""Base class for scenarios designed for humans.
+All interactions will be logged and printed.
+Logs can then be studied to analyze the behavior of the subjects.
+Based on the analysis researchers can find the required mechanisms to
+    replicate the behavior of the subjects with AI.
+"""
 import os
 import abc
 import time
@@ -105,6 +111,8 @@ class Scenario(abc.ABC):
         """Set up the scenario."""
 
     @abc.abstractmethod
-    def check(self):
-        """Check if the scenario is finished."""
+    def check(self) -> bool:
+        """Check if the scenario is finished.
+        Return True if the scenario is finished, False otherwise.
+        """
     
