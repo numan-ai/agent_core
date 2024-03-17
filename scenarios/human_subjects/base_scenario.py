@@ -4,8 +4,6 @@ import time
 import logging
 import threading
 
-from contextlib import contextmanager
-
 
 def setup_logging():
     os.makedirs("logs", exist_ok=True)
@@ -21,8 +19,8 @@ def setup_logging():
         format='%(asctime)s %(levelname)s %(message)s',
         datefmt='%H:%M:%S',
         level=logging.DEBUG)
-    
-    
+
+
 setup_logging()
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,7 @@ def handle_input(api, say):
     while True:
         user_input = input("")
         func_name, *args = user_input.split()
-        logger.info(f"< {user_input}")
+        logger.info("< %s", user_input)
         
         args = [
             int(arg) if arg.isdigit() else arg
@@ -44,23 +42,23 @@ def handle_input(api, say):
             func = getattr(api, func_name)
         else:
             print(f"Unknown function: {func_name}")
-            logger.info(f"Unknown function: {func_name}")
+            logger.info("Unknown function: %s", func_name)
             continue
         
         try:
             output = func(*args)
         except Exception as e:
             output = f"{type(e)} {str(e)}"
-        logger.info(f"> {output}")
+        logger.info("> %s", output)
         print('>', output)
 
 
-def api_say(self, text, block=True):
+def api_say(text, block=True):
     print(f">> {text}")
-    logger.info(f">> {text}")
+    logger.info(">> %s", text)
     if block:
         answer = input("User answer: ")
-        logger.info(f"User answer: {answer}")
+        logger.info("User answer: %s", answer)
 
 
 class Scenario(abc.ABC):
@@ -70,7 +68,7 @@ class Scenario(abc.ABC):
     
     def say(self, text: str):
         print(f">> {text}")
-        logger.info(f">> {text}")
+        logger.info(">> %s", text)
         
     def run(self):
         threading.Thread(
