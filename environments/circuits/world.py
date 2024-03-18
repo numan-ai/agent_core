@@ -134,6 +134,23 @@ class OrGate(Component):
         self.world.pin_values[self.output_pin_id] = min(max(value, 0), 1)
 
 
+class XorGate(Component):
+    def __init__(self, world, component_id) -> None:
+        super().__init__(world, component_id)
+        self.add_input_pin()
+        self.add_input_pin()
+        self.add_output_pin()
+        
+    def interact(self, action: str):
+        raise ValueError("OrGate cannot be interacted with")
+        
+    def step(self):
+        input_a = self.world.pin_values[self.input_pin_ids[0]]
+        input_b = self.world.pin_values[self.input_pin_ids[1]]
+        value = input_a + input_b - input_a * input_b
+        self.world.pin_values[self.output_pin_id] = min(max(value, 0), 1)
+
+
 class Switch(Component):
     def __init__(self, world, component_id) -> None:
         super().__init__(world, component_id)
@@ -184,6 +201,13 @@ class CircuitWorld:
         self.pin_values = {}
         self.api = CircuitAPI(self)
         
+    def reset(self):
+        self.components = {}
+        self.wires = []
+        self.input_pin_ids = set()
+        self.output_pin_ids = set()
+        self.pin_values = {}
+        
     @classmethod
     def get_next_id(cls):
         cls.last_id += 1
@@ -219,7 +243,12 @@ class CircuitAPI:
     def list(self):
         return list(self.__world.components.values())
     
-    def wires(self):
+    def wires(self, pin_id=None):
+        if pin_id is not None:
+            return [
+                (out_id, in_id) for out_id, in_id in self.__world.wires
+                if out_id == pin_id or in_id == pin_id
+            ]
         return self.__world.wires
     
     def create(self, label: str):
@@ -230,6 +259,7 @@ class CircuitAPI:
             "NotGate": NotGate,
             "AndGate": AndGate,
             "OrGate": OrGate,
+            "XorGate": XorGate,
             "Clock": Clock,
         }
         comp = component_classes[label](self.__world, self.__world.get_next_id())
@@ -241,6 +271,8 @@ class CircuitAPI:
             raise ValueError(f"Pin with id {pin_out} is not an output pin")
         if pin_in not in self.__world.input_pin_ids:
             raise ValueError(f"Pin with id {pin_in} is not an input pin")
+        if (pin_out, pin_in) in self.__world.wires:
+            return
         self.__world.wires.append((pin_out, pin_in))
 
     def disconnect(self, pin_a: int, pin_b: int):

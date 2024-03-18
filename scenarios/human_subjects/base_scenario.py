@@ -86,7 +86,7 @@ class Scenario(abc.ABC):
     def say(self, text: str):
         """Print text and log it."""
         print(f">> {text}")
-        logger.info(">> %s", text)
+        logger.info(f">> %s {text}", text)
 
     def run(self):
         """Run the scenario."""

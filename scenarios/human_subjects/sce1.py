@@ -6,14 +6,14 @@ from scenarios.human_subjects.base_scenario import Scenario
     
 class Scenario1(Scenario):
     def setup(self):
-        self.btns = [
+        self.buttons = [
             self.api.create("Button")
             for _ in range(4)
         ]
         self.led = self.api.create("LED")
-        self.corrent_btn = random.choice(self.btns)
+        self.correct_btn = random.choice(self.buttons)
         self.api.connect(
-            self.corrent_btn.output_pin_id,
+            self.correct_btn.output_pin_id,
             self.led.input_pin_id,
         )
         
@@ -24,8 +24,8 @@ class Scenario1(Scenario):
             self.say("Success!")
             return True
         
-        for btn in self.btns:
-            if btn is self.corrent_btn:
+        for btn in self.buttons:
+            if btn is self.correct_btn:
                 continue
             if self.api.probe_pin(btn.output_pin_id) == 1:
                 self.say("Failure: wrong button pressed")
