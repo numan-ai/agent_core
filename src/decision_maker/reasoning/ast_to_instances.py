@@ -16,6 +16,13 @@ def _camel_to_snake(name: str):
 
 class Converter:
     def _convert(self, ast_node):
+        '''
+        The heart of this converter.
+        it takes any given node like ast.Attribute and it searches in its methods
+        if it has something for it, like in this case, it would be _convert_attribute
+
+        If we have the method, we call it and return it, if not, we tell the user that it's missing
+        '''
         method_name = f"_convert_{_camel_to_snake(type(ast_node).__name__)}"
         
         if hasattr(self, method_name):
@@ -30,7 +37,7 @@ class Converter:
 
     def _convert_name(self, ast_node: ast.Name):
         return Instance("String", {"value":ast_node.id})
-        #return ast_node.id
+
     def _convert_str(self, ast_node: str):
         return Instance("String", {"value":ast_node})
     
@@ -48,46 +55,30 @@ class Converter:
     
     def _convert_constant(self, ast_node: ast.Constant):
         return Instance("Number", {"value": ast_node.value})
-        #return ast_node.value
 
     def _convert_assign(self, ast_node: ast.Assign):
-        #print(ast_node.targets[0].id, "=", ast_node.value.value.id)
-
-        print("Here's an assign:",ast_node)
-        
-        #self.instance_tree.append(instance)
-
         value = self._convert(ast_node.value)
         for target in ast_node.targets:
             instance = Instance("AST_Assign", {"target":self._convert(target), "value":value})
-            #if isinstance(target, ast.Tuple):
-            #    for elt in target.elts:
-            #        node_target = self._convert(elt)
-            #        self.edges.append(Edge(node.id, node_target.id, 'targets'))
-
-        ###node_value = self._convert(ast_node.value)
-
-        #self._last_nodes = [node, ]
+            # This might or might not need some other approach because as you can see, it only returns the last of this
     
         return instance
     
 
     def convert(self, func_def: ast.FunctionDef) -> Instance:
+        '''
+        This is the main way of using this class. You give it an ast.FunctionDef
+        and it will explore all of its nodes, per each node it will retreive its
+        value or keep calling functions until it reaches something it can run
+
+        We could say that this is completely automatic, error free and kind of recursive.
+        '''
         instance = Instance("AST_FunctionDef", {"name" : self._convert(func_def.name), 
                                             "arguments" : None,
                                             "body" : []})
-        
-        ###
-        #instance.fields["body"] = self._convert(func_def.body[0])
-        #return instance
-        ###
 
         for ast_node in func_def.body:
-            #last_nodes = self._last_nodes.copy()
             instance.fields["body"].append(self._convert(ast_node))
-
-            #for last_node in last_nodes:
-            #    self.edges.append(Edge(last_node.id, node.id, str(uuid4()), 'next'))
 
         return instance
 
@@ -96,20 +87,21 @@ def convert(ast_graph: ast.FunctionDef):
     return cnv.convert(ast_graph)
 
 
-
-code = """
+if __name__ == "__main__":
+    code = """
 def f():
     a = test.arg1
     b = a + 1
     test.arg2 = b
-"""
+    """
 
-ast_graph = ast.parse(code)
-print("\n",ast.dump(ast_graph, indent=4),"\n")
+    ast_graph = ast.parse(code)
+    print(f"\n\n    INPUT AST\n\n{ast.dump(ast_graph, indent=4)}\n")
 
-funcs = []
-for ast_func in ast_graph.body:
-    converted = convert(ast_func)
-    funcs.append(converted)
+    print(f"\n    OUTPUT NESTED INSTANCES\n")
+    funcs = []
+    for ast_func in ast_graph.body:
+        converted = convert(ast_func)
+        funcs.append(converted)
 
-    print(converted)
+        print(converted)
