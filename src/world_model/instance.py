@@ -54,8 +54,38 @@ class Instance(WorldModelNode):
             {}, 
             instance_id=self.id)
     
-    def __repr__(self) -> str:
-        return f"{self.concept_name}({self.__properties})"
+    # def __repr__(self) -> str:
+    #     return f"{self.concept_name}({self.__properties})"
+    
+    def __repr__(self, indent=0):
+        indent_str = ' ' * indent
+        field_indent_str = ' ' * (indent + 4)
+        
+        # Representing the name
+        repr_str = f"{type(self).__name__}('{self.concept_name}'"
+
+        fields = self.fields.get_all_fields()
+        
+        def _repr(value, idnt):
+            if isinstance(value, Instance):
+                if value.concept_name in ["String", "Number"]:
+                    return f'{value.concept_name}({value.fields.value!r})'
+                return value.__repr__(idnt + 4)
+            elif isinstance(value, list):
+                return f"[{', '.join(_repr(v, idnt + 4) for v in value)}]"
+            else:
+                return repr(value)
+                
+        # Representing the fields
+        if fields:
+            repr_str += ", {\n"
+            for key, value in fields.items():
+                field_repr = _repr(value, indent)
+                repr_str += f"{field_indent_str}'{key}': {field_repr},\n"
+            repr_str += f"{indent_str}}}"
+        
+        repr_str += ")"
+        return repr_str
 
 
 class InstanceFieldsView:
@@ -82,7 +112,7 @@ class InstanceFieldsView:
         if not self._instance.world_model:
             raise AttributeError(f"Instance {self._instance} has no attribute {name}")
         
-        field: InstanceField = self._instance.world_model.out_one(
+        field = self._instance.world_model.out_one(
             self._instance.id, name)
         
         if field is None:

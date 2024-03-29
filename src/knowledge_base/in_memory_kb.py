@@ -18,7 +18,7 @@ class InMemoryKB(BaseKnowledgeBase):
             self.nodes[node['id']] = node
         
         self.edges = edges
-        self.next_id = max([node['id'] for node in nodes]) + 1
+        self.next_id = max([node['id'] for node in nodes], default=0) + 1
         
     def out(self, node_id: int, edge_type: KBEdgeType, 
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 

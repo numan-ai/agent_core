@@ -9,6 +9,9 @@ class BaseHierarchy:
     
     def get_children(self, cid: str, include_self=False) -> list[str]:
         pass
+    
+    def is_subconcept(self, cid: str, parent_cid: str) -> bool:
+        return parent_cid in self.get_parents(cid)
 
 
 class PlainHierarchy(BaseHierarchy):

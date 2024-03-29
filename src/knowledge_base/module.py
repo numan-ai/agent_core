@@ -56,6 +56,7 @@ class KBEdgeType(enum.Enum):
 class KBNodeType(enum.Enum):
     CONCEPT = "Concept"
     FIELD = "Field"
+    TASK = "Task"
     
     
 class KBEdgeDirection(enum.Enum):

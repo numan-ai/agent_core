@@ -1,22 +1,17 @@
-import ast, re
+import re
+import ast
 
-from pprint import pprint
-from dataclasses import dataclass
+from src.world_model.instance import Instance
+
 
 BIN_OP_MAP = {
     ast.Add: 'AST_OpPlus',
 }
 
-@dataclass
-class Instance:
-    concept_name: str
-    fields: dict[str, any] = None
+CAMEL_TO_SNAKE = re.compile(r'(?<!^)(?=[A-Z])')
 
-    def __repr__(self):
-        return f"{type(self).__name__}({self.concept_name}, {pprint(self.fields)})"
 
 def _camel_to_snake(name: str):
-    CAMEL_TO_SNAKE = re.compile(r'(?<!^)(?=[A-Z])')
     return CAMEL_TO_SNAKE.sub('_', name).lower()
 
 class Converter:
@@ -117,4 +112,4 @@ for ast_func in ast_graph.body:
     converted = convert(ast_func)
     funcs.append(converted)
 
-print("\n",funcs,"\n")
+    print(converted)
