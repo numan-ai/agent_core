@@ -72,7 +72,10 @@ class Instance(WorldModelNode):
                     return f'{value.concept_name}({value.fields.value!r})'
                 return value.__repr__(idnt + 4)
             elif isinstance(value, list):
-                return f"[{', '.join(_repr(v, idnt + 4) for v in value)}]"
+                list_indent = '    ' * (idnt + 2)
+                list_end_indent = '    ' * (idnt + 1)
+                values_repr = ', '.join(_repr(v, idnt + 4) for v in value)
+                return f"[\n{list_indent}{values_repr}\n{list_end_indent}]"
             else:
                 return repr(value)
                 
