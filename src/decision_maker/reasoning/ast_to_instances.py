@@ -71,7 +71,7 @@ class Converter:
         return tuple(self._convert(ast_node) for ast_node in ast_tuple.elts)
 
     def _convert_name(self, ast_node: ast.Name):
-        return Instance("String", {"value":ast_node.id})
+        return Instance("AST_Variable", {"value":ast_node.id})
 
     def _convert_str(self, ast_node: str):
         return Instance("String", {"value":ast_node})
@@ -89,7 +89,10 @@ class Converter:
         return instance
     
     def _convert_constant(self, ast_node: ast.Constant):
-        return Instance("Number", {"value": ast_node.value})
+        if type(ast_node.value) == str:
+            return Instance("String", {"value": ast_node.value})
+        else:
+            return Instance("Number", {"value": ast_node.value})
 
     def _convert_assign(self, ast_node: ast.Assign):
         instance = Instance("AST_Assign", {"target":self._convert(ast_node.targets),
@@ -113,10 +116,7 @@ def convert(ast_graph: ast.FunctionDef):
 
 if __name__ == "__main__":
     code = """
-def f():
-    a = test.arg1
-    b = a + 1
-    test.arg2 = b
+hello.size
     """
 
     ast_graph = ast.parse(code)
