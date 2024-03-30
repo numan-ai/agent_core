@@ -3,7 +3,7 @@ from ast_to_instances import Converter
 
 
 def convert(ast_graph: ast.FunctionDef):
-    return Converter()._convert(ast_graph)
+    return Converter().convert(ast_graph)
 
 
 #@pytest.fixture(scope="session")

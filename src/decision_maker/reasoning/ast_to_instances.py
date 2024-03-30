@@ -104,8 +104,11 @@ class Converter:
                                             "body" : self._convert(func_def.body)})
         return instance
 
+    def convert(self, ast_graph):
+        return self._convert(ast_graph)
+
 def convert(ast_graph: ast.FunctionDef):
-    return Converter()._convert(ast_graph)
+    return Converter().convert(ast_graph)
 
 
 if __name__ == "__main__":
