@@ -90,6 +90,13 @@ class Instance(WorldModelNode):
         repr_str += ")"
         return repr_str
 
+    def __eq__(self, other_instance: 'Instance'):
+        if type(other_instance) == Instance:
+            equal_names = self.concept_name == other_instance.concept_name
+            equal_fields = self.__properties == other_instance.__properties
+            return equal_names and equal_fields
+        else: return False
+
 
 class InstanceFieldsView:
     """ Aggregates fields and relations of the instance """
