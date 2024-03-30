@@ -1,7 +1,6 @@
 import random
 
 import agci
-import agci.interpreter
 
 from src.base_module import AgentModule
 from src.knowledge_base.concept import Concept
