@@ -6,6 +6,10 @@ from src.world_model.instance import Instance
 
 BIN_OP_MAP = {
     ast.Add: 'AST_OpPlus',
+    ast.Sub: 'AST_OpMinus',
+    ast.Div: 'AST_OpDividedBy',
+    ast.Mult: 'AST_OpMultipliedBy',
+    ast.Pow: 'AST_OpToThePowerOf'
 }
 
 CAMEL_TO_SNAKE = re.compile(r'(?<!^)(?=[A-Z])')
@@ -26,14 +30,45 @@ class Converter:
         method_name = f"_convert_{_camel_to_snake(type(ast_node).__name__)}"
         
         if hasattr(self, method_name):
-            instance_tree = getattr(self, method_name)(ast_node)
-            return instance_tree
+            instances = getattr(self, method_name)(ast_node)
+            return instances
         elif ast_node is None:
             return self._convert_none()
         else:
             print(f" - Implementation needed for: {method_name}")
             print(f"AST name: {ast_node}")
-            pass
+            raise NotImplementedError()
+
+    def _convert_arg(self, ast_arg: ast.arg):
+        return Instance("AST_argument", {"value":ast_arg.arg})
+
+    def _convert_arguments(self, ast_arguments: ast.arguments): # This only converts args. Not posonlyargs, kwonlyargs, kw_defaults or defaults
+        return self._convert(ast_arguments.args)
+
+    def _convert_lambda(self, ast_lambda: ast.Lambda):
+        instance = Instance("AST_Lambda", {"args":self._convert(ast_lambda.args),
+                                           "body":self._convert(ast_lambda.body)})
+        return instance
+
+    def _convert_return(self, ast_return: ast.Return):
+        return Instance("AST_Return", {"value":self._convert(ast_return.value)})
+
+    def _convert_call(self, ast_call: ast.Call):
+        instance = Instance("AST_Call", {"func":self._convert(ast_call.func),
+                                         "args":self._convert(ast_call.args),
+                                        "keywords":self._convert(ast_call.keywords)})
+        return instance
+
+    def _convert_expr(self, ast_expr: ast.expr):
+        return self._convert(ast_expr.value)
+
+    def _convert_list(self, ast_list: ast.List):
+        if type(ast_list) == ast.List:
+            ast_list = ast_list.elts
+        return [self._convert(ast_node) for ast_node in ast_list]
+    
+    def _convert_tuple(self, ast_tuple: ast.Tuple):
+        return tuple(self._convert(ast_node) for ast_node in ast_tuple.elts)
 
     def _convert_name(self, ast_node: ast.Name):
         return Instance("String", {"value":ast_node.id})
@@ -42,8 +77,8 @@ class Converter:
         return Instance("String", {"value":ast_node})
     
     def _convert_attribute(self, ast_node: ast.Attribute):
-        value = ast_node.value
-        instance = Instance("AST_Attribute", {"value":self._convert(value), "attr":ast_node.attr})
+        instance = Instance("AST_Attribute", {"value":self._convert(ast_node.value),
+                                              "attr":self._convert(ast_node.attr)})
         return instance
 
     def _convert_bin_op(self, ast_node: ast.BinOp):
@@ -57,34 +92,20 @@ class Converter:
         return Instance("Number", {"value": ast_node.value})
 
     def _convert_assign(self, ast_node: ast.Assign):
-        value = self._convert(ast_node.value)
-        for target in ast_node.targets:
-            instance = Instance("AST_Assign", {"target":self._convert(target), "value":value})
-            # This might or might not need some other approach because as you can see, it only returns the last of this
-    
+        instance = Instance("AST_Assign", {"target":self._convert(ast_node.targets),
+                                           "value":self._convert(ast_node.value)})
+
         return instance
     
 
-    def convert(self, func_def: ast.FunctionDef) -> Instance:
-        '''
-        This is the main way of using this class. You give it an ast.FunctionDef
-        and it will explore all of its nodes, per each node it will retreive its
-        value or keep calling functions until it reaches something it can run
-
-        We could say that this is completely automatic, error free and kind of recursive.
-        '''
+    def _convert_function_def(self, func_def: ast.FunctionDef) -> Instance:
         instance = Instance("AST_FunctionDef", {"name" : self._convert(func_def.name), 
-                                            "arguments" : None,
-                                            "body" : []})
-
-        for ast_node in func_def.body:
-            instance.fields["body"].append(self._convert(ast_node))
-
+                                            "arguments" : self._convert(func_def.args),
+                                            "body" : self._convert(func_def.body)})
         return instance
 
 def convert(ast_graph: ast.FunctionDef):
-    cnv = Converter()
-    return cnv.convert(ast_graph)
+    return Converter()._convert(ast_graph)
 
 
 if __name__ == "__main__":
@@ -99,9 +120,4 @@ def f():
     print(f"\n\n    INPUT AST\n\n{ast.dump(ast_graph, indent=4)}\n")
 
     print(f"\n    OUTPUT NESTED INSTANCES\n")
-    funcs = []
-    for ast_func in ast_graph.body:
-        converted = convert(ast_func)
-        funcs.append(converted)
-
-        print(converted)
+    print(convert(ast_graph.body))
