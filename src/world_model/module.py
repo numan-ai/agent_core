@@ -40,7 +40,7 @@ class WorldModel(AgentModule):
     def add(self, instance: 'Instance'):
         from src.world_model.instance import Instance
         
-        self.associative_graph.add_edge(
+        self.associative_graph.set_weight(
             instance.concept_name,
             instance.id,
             weight=1,
