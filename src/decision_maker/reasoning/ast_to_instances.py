@@ -40,7 +40,7 @@ class Converter:
             raise NotImplementedError()
 
     def _convert_arg(self, ast_arg: ast.arg):
-        return Instance("AST_argument", {"value":ast_arg.arg})
+        return Instance("AST_Argument", {"value":ast_arg.arg})
 
     def _convert_arguments(self, ast_arguments: ast.arguments): # This only converts args. Not posonlyargs, kwonlyargs, kw_defaults or defaults
         return self._convert(ast_arguments.args)
@@ -95,7 +95,9 @@ class Converter:
             return Instance("Number", {"value": ast_node.value})
 
     def _convert_assign(self, ast_node: ast.Assign):
-        instance = Instance("AST_Assign", {"target":self._convert(ast_node.targets),
+        if type((target:=ast_node.targets)[0]) != ast.Name:
+            raise NotImplementedError("Can't assign to multiple variables yet")
+        instance = Instance("AST_Assign", {"target":self._convert(target),
                                            "value":self._convert(ast_node.value)})
 
         return instance
@@ -116,7 +118,7 @@ def convert(ast_graph: ast.FunctionDef):
 
 if __name__ == "__main__":
     code = """
-hello.size
+a.b
     """
 
     ast_graph = ast.parse(code)
