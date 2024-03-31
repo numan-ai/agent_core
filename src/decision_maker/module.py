@@ -1,9 +1,11 @@
 import queue
 
+from agci.sst import Graph
+
 from src.base_module import AgentModule
 from src.knowledge_base.module import KBEdgeType, KnowledgeBase
 from src.world_model import Instance
-from agci.sst import Graph
+from src.decision_maker.context import Context
 
 
 class DecisionMaker(AgentModule):
@@ -23,6 +25,7 @@ class DecisionMaker(AgentModule):
         super().__init__(core)
         self.plan: Graph = Graph([], [])
         self.event_queue = queue.Queue()
+        self.context = Context()
     
     def on_event(self, event: Instance):
         self.event_queue.put(event)
@@ -32,7 +35,8 @@ class DecisionMaker(AgentModule):
             return
         event: Instance = self.event_queue.get()
         # reaction: Instance = self._find_event_reaction(event)
-        self.build_plan(None, event)
+        # self.build_plan(None, event)
+        self.context.add_energy(event.)
     
     def _find_event_reaction(self, event: Instance) -> Instance:
         kb: KnowledgeBase = self.core.knowledge_base
