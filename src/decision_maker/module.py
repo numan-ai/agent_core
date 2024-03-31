@@ -1,5 +1,5 @@
 import queue
-import agci
+
 from src.base_module import AgentModule
 from src.knowledge_base.module import KBEdgeType, KnowledgeBase
 from src.world_model import Instance
@@ -31,8 +31,8 @@ class DecisionMaker(AgentModule):
         if self.event_queue.empty():
             return
         event: Instance = self.event_queue.get()
-        reaction: Instance = self._find_event_reaction(event)
-        self.build_plan(reaction, event)
+        # reaction: Instance = self._find_event_reaction(event)
+        self.build_plan(None, event)
     
     def _find_event_reaction(self, event: Instance) -> Instance:
         kb: KnowledgeBase = self.core.knowledge_base
@@ -49,24 +49,24 @@ class DecisionMaker(AgentModule):
     def build_plan(self, reaction: Instance, event: Instance):
         kwargs = event.fields.get_all_fields()
         
-        kb: KnowledgeBase = self.core.knowledge_base
-        concept = kb.find_concept(reaction.concept_name)
-        tasks = kb.out(concept.id, KBEdgeType.TASK)
-        func_name = tasks[0].data['name']
+        # kb: KnowledgeBase = self.core.knowledge_base
+        # concept = kb.find_concept(reaction.concept_name)
+        # tasks = kb.out(concept.id, KBEdgeType.TASK)
+        # func_name = tasks[0].data['name']
+        # breakpoint()
         
-        func = self.core.action_manager.interpreter.global_vars[func_name]
-        new_plan, new_kwargs = func.resolve_dispatch([], kwargs)
+        # func = self.core.action_manager.interpreter.global_vars[func_name]
+        # new_plan, new_kwargs = func.resolve_dispatch([], kwargs)
         
-        self.core.action_manager.interpreter.ctx.append(
-            agci.interpreter.InterpreterContext(
-                variables={
-                    **self.core.action_manager.interpreter.global_vars,
-                    **new_kwargs,
-                }
-            )
-        )
+        task = self.core.action_manager.eagci.find_max_energy_node()
+        self.core.action_manager.interpreter.trigger_function(task.node_id)
         
-        if not self.plan.get_nodes():
-            self.plan = new_plan
-        else:
-            raise NotImplementedError("Appending plans is not implemented")
+        self.core.action_manager.interpreter.add_context({
+            **self.core.action_manager.interpreter.global_vars,
+            **kwargs,
+        })
+        
+        # if not self.plan.get_nodes():
+        #     self.plan = new_plan
+        # else:
+        #     raise NotImplementedError("Appending plans is not implemented")

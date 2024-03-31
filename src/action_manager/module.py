@@ -2,6 +2,7 @@ import random
 
 import agci
 
+from src.action_manager.eagci import TaskEnergyGraph
 from src.base_module import AgentModule
 from src.knowledge_base.concept import Concept
 from src.knowledge_base.hierarchy import PlainHierarchy, is_child
@@ -65,8 +66,6 @@ def set_field(entity, field, value):
 class ActionManager(AgentModule):
     def __init__(self, core) -> None:
         super().__init__(core)
-        self.execution_iterator = None
-        self.is_head_initialized = False
         self.interpreter = InterpreterWithConceptDispatch({
             'len': len,
             'abs': abs,
@@ -92,20 +91,12 @@ class ActionManager(AgentModule):
         self.interpreter.load_file('./agent_code/ac_code_reasoning.py')
         self.done = False
         
-    def step(self):
-        plan = self.core.decision_maker.plan
-        if not self.is_head_initialized:
-            assert plan.get_nodes()
-            self.head = plan.get_nodes()[0]
-            self.execution_iterator = self.interpreter.interpret_node(plan, self.head)
-            self.is_head_initialized = True
-            
-        if self.head is None:
-            self.done = True
-            return
+        fake_hierarchy = []
+        self.eagci = TaskEnergyGraph("Task", fake_hierarchy)
         
+    def step(self):
         try:
-            next(self.execution_iterator)
-        except StopIteration as e:
-            result, self.head = e.value
-            self.execution_iterator = self.interpreter.interpret_node(plan, self.head)
+            self.interpreter.step()
+        except StopIteration:
+            self.done = True
+            print('done')
