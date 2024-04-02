@@ -2,10 +2,10 @@ import queue
 
 from agci.sst import Graph
 
+from prototyping.context import KBContext
 from src.base_module import AgentModule
 from src.knowledge_base.module import KBEdgeType, KnowledgeBase
 from src.world_model import Instance
-from src.decision_maker.context import Context
 
 
 class DecisionMaker(AgentModule):
@@ -25,7 +25,7 @@ class DecisionMaker(AgentModule):
         super().__init__(core)
         self.plan: Graph = Graph([], [])
         self.event_queue = queue.Queue()
-        self.context = Context()
+        self.context = KBContext(core.knowledge_base)
     
     def on_event(self, event: Instance):
         self.event_queue.put(event)
@@ -36,7 +36,22 @@ class DecisionMaker(AgentModule):
         event: Instance = self.event_queue.get()
         # reaction: Instance = self._find_event_reaction(event)
         # self.build_plan(None, event)
-        self.context.add_energy(event.)
+        self.context.add_energy(event.concept_name, energy=1.0, propagation=0.6)
+        
+        result = self.context.lookup(event.concept_name, depth=5, depth_decay=0.75)
+        
+        for node, weight in result:
+            if self.context.hierarchy.is_subconcept(node, "Task"):
+                event_reaction = self.core.knowledge_base.find_concept(node)
+                task = self.core.knowledge_base.out(event_reaction.id, KBEdgeType.TASK)[0]
+                self.core.action_manager.interpreter.trigger_function(
+                    task.data['name'],
+                    **event.fields.get_all_fields(),
+                )
+                print("found", node, weight)
+                break
+        else:
+            raise ValueError("No reaction to event found")
     
     def _find_event_reaction(self, event: Instance) -> Instance:
         kb: KnowledgeBase = self.core.knowledge_base

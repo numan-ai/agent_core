@@ -114,6 +114,8 @@ class InstanceFieldsView:
         
         for field in kb_fields:
             result[field.name] = self._instance.world_model.get_node(field.end)
+            
+        return result
         
     def __getattr__(self, name: str):
         if name in self._properties:

@@ -2,6 +2,10 @@ from src.base_module import AgentModule
 from src.world_model import Instance
 
 
+def dummy_input_filter(event):
+    return True
+
+
 class InputProcessor(AgentModule):
     """ Processes raw data and sends events to the decision maker.
     """
@@ -11,7 +15,8 @@ class InputProcessor(AgentModule):
         super().__init__(core)
 
     def send_event(self, event: Instance):
-        self.core.decision_maker.on_event(event)
+        if dummy_input_filter(event):
+            self.core.decision_maker.on_event(event)
     
     def step(self):
         pass

@@ -90,3 +90,67 @@ def is_child(hierarchy: BaseHierarchy, concept: Concept, parent: Concept) -> boo
             return False
     
     return True
+
+
+class StaticKBHierarchy(BaseHierarchy):
+    def __init__(self, kb):
+        self.kb = kb
+        self.cached_children = {}
+        self.cached_parents = {}
+        self.prefeteched = False
+
+    def prefetch(self):
+        self.prefeteched = True
+        self.cached_parents, self.cached_children = self.kb.build_hierarchy()
+
+    def get_children(self, concept: str, include_self=False):
+        if concept not in self.cached_children:
+            if self.prefeteched:
+                return [concept, ]
+        #     node = self.kb.find_concept(concept)
+        #     self.cached_children[concept] = [
+        #         node.data['name']
+        #         for node in self.kb.find_children(node.id)
+        #     ]
+        return self.cached_children[concept] + [concept]
+
+    def get_parents(self, concept: str, include_self=True):
+        # if '{' in concept:
+        #     concept_obj = Concept.from_cid(concept)
+        #     concept_kb = self.kb.find_concept(concept_obj.name)
+        #     parents = self.kb.find_parents(concept_kb.id)
+        #     augments = {}
+        #     for parent in parents:
+        #         augments.update(self.kb.out_dict_pair(parent.id, 'field'))
+        #     augments.update(self.kb.out_dict_pair(concept_kb.id, 'field'))
+
+        #     aug_parents = []
+
+        #     for key, (augment_edge, augment_concept) in augments.items():
+        #         if augment_edge['parent'] != '1':
+        #             continue
+        #         try:
+        #             aug_parents.append(concept_obj.aug[key].name)
+        #         except KeyError:
+        #             breakpoint()
+        #         aug_parents.extend(self.get_parents(concept_obj.fields[key].to_cid()))
+
+        #     parent_names = [
+        #         x.data['name'] for x in parents
+        #     ]
+
+        #     return sorted(list(set(parent_names + aug_parents + [concept_obj.name])))
+    
+        if concept not in self.cached_parents:
+            if self.prefeteched:
+                return [concept, ]
+        #     try:
+        #         node = self.kb.find_concept(concept)
+        #     except KeyError:
+        #         self.cached_parents[concept] = [concept, ]
+        #         return [concept, ]
+        #     self.cached_parents[concept] = [
+        #         node.data['name']
+        #         for node in self.kb.find_parents(node.id)
+        #     ]
+        return self.cached_parents[concept] + [concept]

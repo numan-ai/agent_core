@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import abc
 import enum
@@ -395,3 +396,27 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     
     def get_field(self, concept_id: str, field_name: str) -> Optional[KBNode]:
         raise NotImplementedError()
+    
+    def build_hierarchy(self):
+        results, _ = db.cypher_query(
+            """MATCH (a:Concept) -[r:parent*]-> (b:Concept) RETURN a, b""")
+
+        parents = defaultdict(list)
+        children = defaultdict(list)
+        for child, parent in results:
+            parents[child['name']].append(parent['name'])
+            children[parent['name']].append(child['name'])
+
+        return parents, children
+
+    def build_direct_hierarchy(self):
+        results, _ = db.cypher_query(
+            """MATCH (a:Concept) -[r:parent]-> (b:Concept) RETURN a, b""")
+
+        parents = defaultdict(list)
+        children = defaultdict(list)
+        for child, parent in results:
+            parents[child['name']].append(parent['name'])
+            children[parent['name']].append(child['name'])
+
+        return parents, children

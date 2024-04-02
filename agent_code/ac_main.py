@@ -1,3 +1,17 @@
+def react_on_user_message(sentence: AchieveGoal):
+    print(dispatch_test(Number(1)))
+    
+    
+def dispatch_test(abc: String):
+    print("String")
+    return 1
+    
+    
+def dispatch_test(abc: Number):
+    print("Number")
+    return 2
+    
+    
 def react_on_user_message(sentence: IsQuestionStatement):
     expression = sentence.fields.expression
     result = evaluate_expression(expression)

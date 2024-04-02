@@ -2,7 +2,6 @@ import random
 
 import agci
 
-from src.action_manager.eagci import TaskEnergyGraph
 from src.base_module import AgentModule
 from src.knowledge_base.concept import Concept
 from src.knowledge_base.hierarchy import PlainHierarchy, is_child
@@ -91,8 +90,8 @@ class ActionManager(AgentModule):
         self.interpreter.load_file('./agent_code/ac_code_reasoning.py')
         self.done = False
         
-        fake_hierarchy = []
-        self.eagci = TaskEnergyGraph("Task", fake_hierarchy)
+        # fake_hierarchy = []
+        # self.eagci = TaskEnergyGraph("Task", fake_hierarchy)
         
     def step(self):
         try:
