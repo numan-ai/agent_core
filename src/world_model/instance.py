@@ -122,7 +122,8 @@ class InstanceFieldsView:
             return self._properties[name]
         
         if not self._instance.world_model:
-            raise AttributeError(f"Instance {self._instance} has no attribute {name}")
+            breakpoint()
+            raise AttributeError(f"Instance {self._instance} has no attribute '{name}'")
         
         field = self._instance.world_model.out_one(
             self._instance.id, name)
