@@ -40,8 +40,11 @@ def call_with_kwargs(callable, args, kwargs):
 
 IAST_CODE = """
 def main():
-    if a > 10:
-        print(i)
+    abc = 0
+    for i in range(10):
+        if i % 2 == 0:
+            abc = abc + 1
+    print(abc)
 """
 
 

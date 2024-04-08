@@ -114,7 +114,7 @@ def main():
         }
     })
     
-    return find_good_branch(iast_code)
+    # return find_good_branch(iast_code)
     
     for instruction in iast_code.fields.body:
         # print(instruction)
