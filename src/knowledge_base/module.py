@@ -51,10 +51,19 @@ class KBEdgeType(enum.Enum):
     FIELD_CONCEPT = "concept"
     # Field -> Task
     FIELD_GETTER = "getter"
+    FIELD_SETTER_TARGET = "target"
     # Field -> Field
     FIELD_REVERSE = "reverse"
     REACTION = "reaction"
     ASSOCIATED = "associated"
+    # Getter -> Instance
+    GETTER_INSTANCE = "object"
+    GETTER_LOGIC = "logic"
+    INSTANCE_FIELD = "fields"
+    FIELD_CONCEPT_FIELD = "concept_field"
+
+    CONDITION_LEFT = "left"
+    CONDITION_RIGHT = "right"
     
     
 class KBNodeType(enum.Enum):
@@ -193,6 +202,17 @@ class BaseKnowledgeBase(abc.ABC):
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
             direct=True) -> list[KBNode]:
         pass
+
+    def in_(self, node_id: int, edge_type: KBEdgeType, 
+            edge_filters: tuple = None,
+            direct=True) -> list[KBNode]:
+        return self.out(
+            node_id=node_id,
+            edge_type=edge_type,
+            edge_filters=edge_filters,
+            direction=KBEdgeDirection.IN,
+            direct=direct,
+        )
     
     @abc.abstractmethod
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
