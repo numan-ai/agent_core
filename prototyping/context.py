@@ -14,8 +14,7 @@ from src.knowledge_base.module import (
 class KBContext(AssociativeEnergyGraph):
     def __init__(self, kb: KnowledgeBase):
         super().__init__([])
-        self.hierarchy = StaticKBHierarchy(kb)
-        self.hierarchy.prefetch()
+        self.hierarchy = kb.hierarchy
         
         tasks = kb.find_nodes(KBNodeType.TASK, ())
         event_reactions_list = [

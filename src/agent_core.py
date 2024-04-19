@@ -35,7 +35,7 @@ class AgentCore:
             module.step()
         
         if world is not None:
-                world.step()
+            world.step()
             
     def run(self, world=None):
         while not self.action_manager.done:

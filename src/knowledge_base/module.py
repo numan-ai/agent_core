@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from neomodel import db, config
 from dotenv import load_dotenv
 
+from src.knowledge_base.hierarchy import StaticKBHierarchy
+
 from .concept import Concept
 from src.base_module import AgentModule
 
@@ -52,6 +54,7 @@ class KBEdgeType(enum.Enum):
     # Field -> Field
     FIELD_REVERSE = "reverse"
     REACTION = "reaction"
+    ASSOCIATED = "associated"
     
     
 class KBNodeType(enum.Enum):
@@ -248,6 +251,11 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     What @cache does is remembering the result of a previous computation.
     f(n) is stored so when called again there's no need to run the function
     """
+    def __init__(self, core):
+        super().__init__(core)
+        self.hierarchy = StaticKBHierarchy(self)
+        self.hierarchy.prefetch()
+    
     @functools.cache
     def out(self, node_id: int, edge_type: KBEdgeType, 
             edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
@@ -343,7 +351,10 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     @functools.cache
     def get_word(self, word: str):
         results, columns = db.cypher_query(
-            f"""MATCH (a:Word {{name: '{word}'}}) RETURN a""")
+            f"""MATCH (a:Word {{value: '{word}'}}) RETURN a""")
+        
+        if not results:
+            return None
 
         return KBNode.create(results[0][0])
     

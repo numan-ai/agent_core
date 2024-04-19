@@ -40,13 +40,22 @@ def react_on_user_message(sentence: LogicOfActionStatement):
     print(sentence)
     
 
-def react_on_user_message(sentence: ActOnReferencedEntityStatement):
+def react_on_user_message(sentence: ActOnReferencedEntityStatement(reference=DefiniteEntityReference)):
     # resolve "the button" to an entity
     entity = resolve_reference(sentence.fields.reference)
     # act on the entity
     act_on_entity(entity, sentence.fields.act)
     
     
+def react_on_user_message(sentence: ActOnReferencedEntityStatement(reference=IndefiniteEntityReference)):
+    act_on_entity_class(sentence.fields.act, sentence.fields.reference.fields.ref_class)
+
+
+def act_on_entity_class(act: CreateAct, entity_class: CircuitButtonClass):
+    api.create("Button")
+    print('done')
+
+
 def react_on_user_message(sentence: HowManyThereAreQuestion(concept=PluralConcept)):
     # it's wrapped in PluralConcept, so we need to get the inner concept
     class_concept = sentence.fields.concept.fields.concept
@@ -210,10 +219,6 @@ def evaluate(expression: EntityField):
     return evaluate(expression.fields.entity.fields[
         expression.fields.field_name.fields.value
     ])
-    
-
-def evaluate(expression: Number):
-    return expression
 
 
 def kb_find_field_node(entity: CircuitLED, concept: TurnedOnState):
@@ -235,3 +240,73 @@ def model_wire_step(wire: CircuitWire):
     wire_value = max(pin_a_value, pin_b_value)
     set_field(pin_a, String("value"), wire_value)
     set_field(pin_b, String("value"), wire_value)
+
+
+def react_on_user_message(sentence: GreetingStatement):
+    print("Hello!")
+
+
+def evaluate(expression: BinaryMathExpression(sign=PlusSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    _print('a', left)
+    _print('b', right)
+    return Number(left.fields.value + right.fields.value)
+
+
+def evaluate(expression: BinaryMathExpression(sign=MinusSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    return Number(left.fields.value - right.fields.value)
+
+
+def evaluate(expression: BinaryMathExpression(sign=MultiplicationSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    return Number(left.fields.value * right.fields.value)
+
+
+def evaluate(expression: BinaryMathExpression(sign=DivisionSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    return Number(left.fields.value / right.fields.value)
+
+
+
+def evaluate(expression: BinaryMathExpression(sign=GreaterThanSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    return Boolean(left.fields.value > right.fields.value)
+
+
+def evaluate(expression: BinaryMathExpression(sign=LessThanSign)):
+    left = evaluate(expression.fields.left)
+    right = evaluate(expression.fields.right)
+    return Boolean(left.fields.value < right.fields.value)
+
+
+def evaluate(expression: Number):
+    return Number(float(expression.fields.value))
+
+
+def evaluate(expression: NegativeNumber):
+    return Number(-float(expression.fields.number.fields.value))
+
+
+def evaluate(expression: FloatingPointNumber):
+    return Number(float(str(expression.fields.before_dot.fields.value) + '.' + str(expression.fields.after_dot.fields.value)))
+   
+
+def evaluate(expression: MathExpressionInParenthesis):
+    val = evaluate(expression.fields.expression)
+    return val
+ 
+
+def react_on_user_message(sentence: PrintMathExpression):
+    result = evaluate(sentence.fields.expression)
+    print(result.fields.value)
+    
+    
+def react_on_user_message(sentence: BinaryMathExpression):
+    result = evaluate(sentence)
+    print(result.fields.value)

@@ -51,6 +51,12 @@ def string_to_instance(string):
     return Instance("String", {
         "value": string,
     })
+    
+    
+def bool_to_instance(value):
+    return Instance("Boolean", {
+        "value": value,
+    })
 
 
 def set_field(entity, field, value):
@@ -71,6 +77,10 @@ class ActionManager(AgentModule):
             'print': print,
             'range': range,
             'random': random,
+            'int': int,
+            'float': float,
+            'str': str,
+            'bool': bool,
             'isinstance': isinstance,
             'kb': core.knowledge_base,
             'wm': core.world_model,
@@ -83,6 +93,7 @@ class ActionManager(AgentModule):
             'set_field': set_field,
             'Number': number_to_instance,
             'String': string_to_instance,
+            'Boolean': bool_to_instance,
         }, core)
         self.interpreter.global_vars['interpreter'] = self.interpreter
         self.interpreter.load_file('./agent_code/ac_main.py')
@@ -98,4 +109,4 @@ class ActionManager(AgentModule):
             self.interpreter.step()
         except StopIteration:
             self.done = True
-            print('done')
+            # print('done')

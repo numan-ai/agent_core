@@ -166,8 +166,6 @@ def main():
             interpreter.trigger_function(task.node_id)
             current_func = task.node_id
     
-    breakpoint()
-    pass
 
 if __name__ == "__main__":
     main()

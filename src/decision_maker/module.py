@@ -25,6 +25,7 @@ class DecisionMaker(AgentModule):
         super().__init__(core)
         self.plan: Graph = Graph([], [])
         self.event_queue = queue.Queue()
+        
         self.context = KBContext(core.knowledge_base)
     
     def on_event(self, event: Instance):
