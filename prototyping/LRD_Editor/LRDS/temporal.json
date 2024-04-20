@@ -1,0 +1,196 @@
+{
+    "nodes": [
+        {
+            "name": "actions",
+            "node_type": "actions",
+            "id": "e7de2521-eb94-4f76-abd1-d7a4f200418f",
+            "value": false,
+            "position": [
+                660,
+                673
+            ]
+        },
+        {
+            "name": "or",
+            "node_type": "gate",
+            "id": "6021d219-0aa8-44c7-a345-23c62f881f8c",
+            "value": false,
+            "position": [
+                672,
+                306
+            ]
+        },
+        {
+            "name": "button A",
+            "node_type": "object",
+            "id": "420d7988-6426-4451-af35-ea7884e00786",
+            "value": false,
+            "position": [
+                561,
+                569
+            ]
+        },
+        {
+            "name": "button B",
+            "node_type": "object",
+            "id": "a9010596-d3e3-4dd2-b432-414a7af71540",
+            "value": false,
+            "position": [
+                821,
+                560
+            ]
+        },
+        {
+            "name": "pressed",
+            "node_type": "attribute",
+            "id": "17511c20-c592-454e-850c-3dff2d85c629",
+            "value": false,
+            "position": [
+                395,
+                473
+            ]
+        },
+        {
+            "name": "pressed",
+            "node_type": "attribute",
+            "id": "69e5d0f0-66d1-4ebf-99f9-b2b315944699",
+            "value": false,
+            "position": [
+                956,
+                462
+            ]
+        },
+        {
+            "name": "led",
+            "node_type": "object",
+            "id": "6e6a281d-0ba9-4f3f-9be0-cc27fc893ddf",
+            "value": false,
+            "position": [
+                675,
+                127
+            ]
+        },
+        {
+            "name": "on",
+            "node_type": "attribute",
+            "id": "41148626-7246-4704-a3d7-81265765f5b3",
+            "value": false,
+            "position": [
+                590,
+                193
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": "fcf81b44-54ca-43d3-a8cd-4bcaf6aac8fe",
+            "value": false,
+            "position": [
+                243,
+                413
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": "a234516d-f893-465b-98fa-55d0081d3b44",
+            "value": false,
+            "position": [
+                1044,
+                387
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": "9c7cefdf-1703-432d-a954-51e1d2e1c660",
+            "value": false,
+            "position": [
+                1084,
+                483
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": "71d611db-69cf-4bcf-9962-f0dc2df7f8b8",
+            "value": false,
+            "position": [
+                138,
+                508
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": "a9c00015-b7bb-4852-9c9a-0b32fe832107",
+            "value": false,
+            "position": [
+                141,
+                348
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": "f080bac4-a9db-4323-90a5-dac2993cd56b",
+            "value": false,
+            "position": [
+                177,
+                615
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": "5584b2c6-7dc7-46da-a0c9-b307e9aea9f6",
+            "value": false,
+            "position": [
+                1106,
+                299
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": "b21d2397-f66e-4cd1-9454-59362fbf4ace",
+            "value": false,
+            "position": [
+                1119,
+                574
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "from_id": "6e6a281d-0ba9-4f3f-9be0-cc27fc893ddf",
+            "to_id": "41148626-7246-4704-a3d7-81265765f5b3",
+            "name": "att",
+            "id": "7ee6ab4c-0caf-4c2f-b3e7-80440c84d601"
+        },
+        {
+            "from_id": "420d7988-6426-4451-af35-ea7884e00786",
+            "to_id": "17511c20-c592-454e-850c-3dff2d85c629",
+            "name": "att",
+            "id": "c534d689-12a7-4abc-b699-ad84a216c855"
+        },
+        {
+            "from_id": "a9010596-d3e3-4dd2-b432-414a7af71540",
+            "to_id": "69e5d0f0-66d1-4ebf-99f9-b2b315944699",
+            "name": "att",
+            "id": "1266bdcc-4449-44ec-9a36-4fccc0ce7960"
+        },
+        {
+            "from_id": "9c7cefdf-1703-432d-a954-51e1d2e1c660",
+            "to_id": "b21d2397-f66e-4cd1-9454-59362fbf4ace",
+            "name": "con",
+            "id": "2066a2cd-d7f4-4268-bda6-de9d42d2d42a"
+        },
+        {
+            "from_id": "a234516d-f893-465b-98fa-55d0081d3b44",
+            "to_id": "5584b2c6-7dc7-46da-a0c9-b307e9aea9f6",
+            "name": "con",
+            "id": "5eb57a3b-e505-408c-a444-17fd0ffb604a"
+        }
+    ]
+}

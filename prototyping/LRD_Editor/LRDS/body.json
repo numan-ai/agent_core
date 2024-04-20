@@ -1,0 +1,112 @@
+{
+    "nodes": [
+        {
+            "name": "m_e",
+            "node_type": "object",
+            "id": "df843535-feb0-4fb0-90ad-0c775a0f8061",
+            "value": false,
+            "position": [
+                671,
+                676
+            ]
+        },
+        {
+            "name": "body",
+            "node_type": "attribute",
+            "id": "fd148c92-c632-40c9-aa53-a1ce9298c3f2",
+            "value": false,
+            "position": [
+                672,
+                472
+            ]
+        },
+        {
+            "name": "owner",
+            "node_type": "object",
+            "id": "45f5c185-185c-48f3-8233-e2a789c478ab",
+            "value": false,
+            "position": [
+                507,
+                85
+            ]
+        },
+        {
+            "name": "body",
+            "node_type": "attribute",
+            "id": "351a41be-d0df-421e-b03d-469e786452e9",
+            "value": false,
+            "position": [
+                531,
+                221
+            ]
+        },
+        {
+            "name": "punch",
+            "node_type": "function",
+            "id": "d87d91dd-dee4-4ee2-9d99-2d1801a5a7b7",
+            "value": false,
+            "position": [
+                388,
+                323
+            ]
+        },
+        {
+            "name": "bite",
+            "node_type": "function",
+            "id": "c797fb08-217c-4c51-8357-191506e1d76d",
+            "value": false,
+            "position": [
+                488,
+                492
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "if_function",
+            "id": "2f17afc0-08fb-4cea-a235-68428018378a",
+            "value": false,
+            "position": [
+                600,
+                344
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "from_id": "df843535-feb0-4fb0-90ad-0c775a0f8061",
+            "to_id": "fd148c92-c632-40c9-aa53-a1ce9298c3f2",
+            "name": "att",
+            "id": "450f4f11-cd6f-43d7-82c2-ec43f49757d0"
+        },
+        {
+            "from_id": "45f5c185-185c-48f3-8233-e2a789c478ab",
+            "to_id": "351a41be-d0df-421e-b03d-469e786452e9",
+            "name": "att",
+            "id": "81177fe7-6271-43e5-9883-17dc968a3d2a"
+        },
+        {
+            "from_id": "351a41be-d0df-421e-b03d-469e786452e9",
+            "to_id": "d87d91dd-dee4-4ee2-9d99-2d1801a5a7b7",
+            "name": "x",
+            "id": "33929431-6e8a-424a-b3f8-bc66deb50cd1"
+        },
+        {
+            "from_id": "fd148c92-c632-40c9-aa53-a1ce9298c3f2",
+            "to_id": "c797fb08-217c-4c51-8357-191506e1d76d",
+            "name": "x",
+            "id": "0811ffd5-1f16-4b16-af57-33a443a31713"
+        },
+        {
+            "from_id": "c797fb08-217c-4c51-8357-191506e1d76d",
+            "to_id": "2f17afc0-08fb-4cea-a235-68428018378a",
+            "name": "x",
+            "id": "8753fd46-25e6-4a15-baba-ab75afd5d6c3"
+        },
+        {
+            "from_id": "2f17afc0-08fb-4cea-a235-68428018378a",
+            "to_id": "d87d91dd-dee4-4ee2-9d99-2d1801a5a7b7",
+            "name": "x",
+            "id": "14e05dd2-b773-40ea-9cd3-45ede265c363"
+        }
+    ]
+}

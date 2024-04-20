@@ -1,0 +1,232 @@
+{
+    "nodes": [
+        {
+            "name": "m_e",
+            "node_type": "object",
+            "id": 0,
+            "value": false,
+            "position": [
+                200.0,
+                640.0
+            ]
+        },
+        {
+            "name": "dressed",
+            "node_type": "attribute",
+            "id": 1,
+            "value": false,
+            "position": [
+                200.0,
+                512.0
+            ]
+        },
+        {
+            "name": "out",
+            "node_type": "attribute",
+            "id": 2,
+            "value": false,
+            "position": [
+                1166.0,
+                512.0
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": 3,
+            "value": false,
+            "position": [
+                200.0,
+                384.0
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": 4,
+            "value": false,
+            "position": [
+                200.0,
+                256.0
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": 5,
+            "value": false,
+            "position": [
+                522.0,
+                384.0
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": 6,
+            "value": false,
+            "position": [
+                844.0,
+                384.0
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "if_function",
+            "id": 7,
+            "value": false,
+            "position": [
+                1166.0,
+                384.0
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": 8,
+            "value": false,
+            "position": [
+                522.0,
+                256.0
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": 9,
+            "value": false,
+            "position": [
+                683.0,
+                128.0
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": 10,
+            "value": false,
+            "position": [
+                844.0,
+                256.0
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": 11,
+            "value": false,
+            "position": [
+                1166.0,
+                256.0
+            ]
+        },
+        {
+            "name": "actions",
+            "node_type": "actions",
+            "id": 12,
+            "value": false,
+            "position": [
+                1166.0,
+                640.0
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "from_id": 0,
+            "to_id": 1,
+            "name": "att",
+            "id": 0
+        },
+        {
+            "from_id": 0,
+            "to_id": 2,
+            "name": "att",
+            "id": 1
+        },
+        {
+            "from_id": 1,
+            "to_id": 3,
+            "name": "x",
+            "id": 2
+        },
+        {
+            "from_id": 1,
+            "to_id": 5,
+            "name": "x",
+            "id": 3
+        },
+        {
+            "from_id": 2,
+            "to_id": 4,
+            "name": "x",
+            "id": 4
+        },
+        {
+            "from_id": 2,
+            "to_id": 6,
+            "name": "x",
+            "id": 5
+        },
+        {
+            "from_id": 1,
+            "to_id": 7,
+            "name": "x",
+            "id": 6
+        },
+        {
+            "from_id": 7,
+            "to_id": 4,
+            "name": "pvk",
+            "id": 7
+        },
+        {
+            "from_id": 3,
+            "to_id": 8,
+            "name": "con",
+            "id": 8
+        },
+        {
+            "from_id": 4,
+            "to_id": 9,
+            "name": "con",
+            "id": 9
+        },
+        {
+            "from_id": 5,
+            "to_id": 10,
+            "name": "con",
+            "id": 10
+        },
+        {
+            "from_id": 6,
+            "to_id": 11,
+            "name": "con",
+            "id": 11
+        },
+        {
+            "from_id": 12,
+            "to_id": 3,
+            "name": "pvk dress",
+            "id": 12
+        },
+        {
+            "from_id": 12,
+            "to_id": 5,
+            "name": "pvk undress",
+            "id": 13
+        },
+        {
+            "from_id": 12,
+            "to_id": 6,
+            "name": "pvk go in",
+            "id": 14
+        },
+        {
+            "from_id": 12,
+            "to_id": 7,
+            "name": "pvk go out",
+            "id": 15
+        }
+    ]
+}
