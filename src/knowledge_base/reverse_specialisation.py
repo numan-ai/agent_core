@@ -36,6 +36,7 @@ def reverse_specialise(instance: Instance, kb: KnowledgeBase):
             concept = kb.find_concept(out_instance.concept_name)
         except KBNotFoundError:
             continue
+        
         field = kb.out_one(
             concept.id, KBEdgeType.FIELD_NODE,
             node_filters=(("name", out_field.name),)

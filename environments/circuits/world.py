@@ -50,6 +50,26 @@ class Component(abc.ABC):
     inputs  = {self.input_pin_ids}
     outputs = {self.output_pin_ids}>"""
     
+    def to_json(self):
+        return {
+            "type": self.__class__.__name__,
+            "id": self.id,
+            "in_pins": [
+                {
+                    "id": pin_in,
+                    "value": self.world.pin_values[pin_in],
+                }
+                for pin_in in self.input_pin_ids
+            ],
+            "out_pins": [
+                {
+                    "id": pin_out,
+                    "value": self.world.pin_values[pin_out],
+                }
+                for pin_out in self.output_pin_ids
+            ]
+        }
+    
     def __repr__(self) -> str:
         if self.input_pin_ids:
             in_part = f" in={self.input_pin_ids}"
@@ -242,6 +262,18 @@ class CircuitAPI:
     
     def list(self):
         return list(self.__world.components.values())
+        
+    def list_json(self):
+        return [
+            x.to_json() for x in self.list()
+        ] + [
+            {
+                "type": "Wire",
+                "start_pin": start,
+                "end_pin": end,
+            }
+            for start, end in self.__world.wires
+        ]
     
     def wires(self, pin_id=None):
         if pin_id is not None:

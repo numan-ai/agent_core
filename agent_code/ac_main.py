@@ -105,9 +105,8 @@ def act_on_entity(entity: CircuitSwitch, act: PressAct):
 
 
 def resolve_reference(reference: DefiniteEntityReference):
-    class_concept = reference.fields.concept
+    class_concept = reference.fields.ref_class
     instance_concept = find_instance_concept_for_class_concept(class_concept)
-    
     results = wm.associative_graph.lookup(instance_concept.concept_name)
     if len(results) == 0:
         raise ValueError("Reference resolution failed")
@@ -120,6 +119,24 @@ def resolve_reference(reference: DefiniteEntityReference):
 
 def process_act_on_entity_event(entity: CircuitButton, act: PressAct):
     model_act_on_entity(entity, act)
+    
+    
+def act_on_entity(entity: LED, act: TurnOnAct):
+    goal = Instance("GoalFieldEqual", {
+        "instance": Instance("InstanceField", {
+            "instance": entity,
+            "field": "is_on",
+        }),
+        "value": Instance("Boolean", {
+            "value": True,
+        }),
+    })
+    goal = traverse_lrd(goal)
+
+    act_on_entity(
+        act=Instance(goal.fields.action),
+        entity=goal.fields.instance,
+    )
 
 
 def model_act_on_entity(entity: CircuitButton, act: PressAct):
@@ -330,8 +347,14 @@ def evaluate(expression: MathExpressionInParenthesis):
 def react_on_user_message(sentence: PrintMathExpression):
     result = evaluate(sentence.fields.expression)
     print(result.fields.value)
+    
+    
+def react_on_user_message(sentence: BinaryMathExpression):
+    result = evaluate(sentence)
+    print(result.fields.value)
 
 
 def act_on_entity(act: PressAction, entity: Button):
+    api.press(entity.fields.id)
     print('pressing the button')
 

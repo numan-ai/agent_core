@@ -476,6 +476,7 @@ def find_options_for_event_goal(kb, goal) -> Instance:
                 "instance": lrd_obj_map[act_obj.node_id],
             })
         
+    breakpoint()
     raise NotImplementedError()
 
 
@@ -543,6 +544,8 @@ def find_options_for_equality_goal(kb: KnowledgeBase, goal: Instance) -> Instanc
             continue
 
         return new_goal
+    
+    breakpoint()
 
     raise NotImplementedError()
 
