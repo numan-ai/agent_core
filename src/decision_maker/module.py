@@ -34,9 +34,8 @@ class DecisionMaker(AgentModule):
     def step(self):
         if self.event_queue.empty():
             return
+        
         event: Instance = self.event_queue.get()
-        # reaction: Instance = self._find_event_reaction(event)
-        # self.build_plan(None, event)
         self.context.add_energy(event.concept_name, energy=1.0, propagation=0.6)
         
         result = self.context.lookup(event.concept_name, depth=5, depth_decay=0.75)
@@ -53,40 +52,3 @@ class DecisionMaker(AgentModule):
                 break
         else:
             raise ValueError("No reaction to event found")
-    
-    def _find_event_reaction(self, event: Instance) -> Instance:
-        kb: KnowledgeBase = self.core.knowledge_base
-        concept = kb.find_concept(event.concept_name)
-        reactions = kb.out(concept.id, KBEdgeType.REACTION)
-        
-        if reactions:
-            return Instance(
-                concept_name=reactions[0].data['name'],
-            )
-            
-        raise ValueError("No reaction found")
-    
-    def build_plan(self, reaction: Instance, event: Instance):
-        kwargs = event.fields.get_all_fields()
-        
-        # kb: KnowledgeBase = self.core.knowledge_base
-        # concept = kb.find_concept(reaction.concept_name)
-        # tasks = kb.out(concept.id, KBEdgeType.TASK)
-        # func_name = tasks[0].data['name']
-        # breakpoint()
-        
-        # func = self.core.action_manager.interpreter.global_vars[func_name]
-        # new_plan, new_kwargs = func.resolve_dispatch([], kwargs)
-        
-        task = self.core.action_manager.eagci.find_max_energy_node()
-        self.core.action_manager.interpreter.trigger_function(task.node_id)
-        
-        self.core.action_manager.interpreter.add_context({
-            **self.core.action_manager.interpreter.global_vars,
-            **kwargs,
-        })
-        
-        # if not self.plan.get_nodes():
-        #     self.plan = new_plan
-        # else:
-        #     raise NotImplementedError("Appending plans is not implemented")

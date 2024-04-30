@@ -51,6 +51,8 @@ class KBEdgeType(enum.Enum):
     FIELD_CONCEPT = "concept"
     # Field -> Task
     FIELD_GETTER = "getter"
+    FIELD_SETTER_ACTION = "setter_action"
+    FIELD_SETTER_EVENT = "setter_event"
     FIELD_SETTER_TARGET = "target"
     # Field -> Field
     FIELD_REVERSE = "reverse"
@@ -64,6 +66,17 @@ class KBEdgeType(enum.Enum):
 
     CONDITION_LEFT = "left"
     CONDITION_RIGHT = "right"
+
+    ON_EVENT_CONCEPT = "concept"
+    ON_ACTION_CONCEPT = "concept"
+
+    ON_EVENT_LOGIC = "logic"
+    ON_ACTION_LOGIC = "logic"
+    ON_EVENT_OBJECT = "object"
+    ON_ACTION_OBJECT = "object"
+
+    FIELD_CHANGE_VALUE = "value"
+    TRIGGER_EVENT_CONCEPT = "concept"
     
     
 class KBNodeType(enum.Enum):
@@ -278,7 +291,8 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
     
     @functools.cache
     def out(self, node_id: int, edge_type: KBEdgeType, 
-            edge_filters: tuple = None, direction: KBEdgeDirection = KBEdgeDirection.OUT, 
+            edge_filters: tuple = None, node_filters: tuple = None,
+              direction: KBEdgeDirection = KBEdgeDirection.OUT, 
             direct=True) -> list[KBNode]:
         """
         You specify a node (a) by its id, this method is going to return
@@ -291,12 +305,26 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
         right_arr = "->" if direction == KBEdgeDirection.OUT else "-"
         
         edge_filters = dict_to_fields(dict(edge_filters)) if edge_filters else ""
+        node_filters = dict_to_fields(dict(node_filters)) if node_filters else ""
         
         results, columns = db.cypher_query(
-            f"""MATCH (a){left_arr}[r:{edge_type.value}{edge_filters}]{right_arr}(b) WHERE id(a)={int(node_id)} RETURN b""")
+            f"""MATCH (a){left_arr}[r:{edge_type.value}{edge_filters}]{right_arr}(b {node_filters}) WHERE id(a)={int(node_id)} RETURN b""")
 
         return [KBNode.create(row[0]) for row in results]
     
+    def out_one(self, *args, **kwargs):
+        """
+        Same as above but only returns one node
+        """
+        results = self.out(*args, **kwargs)
+        if not results:
+            raise KBNotFoundError("No nodes found")
+        
+        if len(results) > 1:
+            raise KBIntegrityError("Multiple nodes found")
+        
+        return results[0]
+
     @functools.cache
     def out_dict(self, node_id: int, edge_type: KBEdgeType, 
                  edge_filters: tuple = None, key: str = 'name', direction: KBEdgeDirection = KBEdgeDirection.OUT, 

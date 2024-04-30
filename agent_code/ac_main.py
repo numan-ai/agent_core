@@ -56,6 +56,11 @@ def act_on_entity_class(act: CreateAct, entity_class: CircuitButtonClass):
     print('done')
 
 
+def react_on_user_message(sentence: Act_IOT_Act):
+    # add LRD nodes to KB
+    pass
+
+
 def react_on_user_message(sentence: HowManyThereAreQuestion(concept=PluralConcept)):
     # it's wrapped in PluralConcept, so we need to get the inner concept
     class_concept = sentence.fields.concept.fields.concept
@@ -91,6 +96,11 @@ def list_world_model_instances(concept: Concept):
 
 def act_on_entity(entity: CircuitButton, act: PressAct):
     # send the "Press" action to the real world button
+    api.interact(entity.fields.id, "Press")
+
+
+def act_on_entity(entity: CircuitSwitch, act: PressAct):
+    # send the "Press" action to the real world switch
     api.interact(entity.fields.id, "Press")
 
 
@@ -145,8 +155,23 @@ def evaluate_expression(expression: BinaryMathExpression(op=LessThan, left=Numbe
     return expression.fields.left.fields.value < expression.fields.right.fields.value
 
 
-def act_on_entity(entity: CircuitLED, act: PutIntoStateAct):
-    achieve_state_goal(entity=entity, state=act.fields.state)
+def act_on_entity(entity: CircuitLED, act: PutIntoStateAct(state=TurnOnState)):
+    # achieve_state_goal(entity=entity, state=act.fields.state)
+    goal = Instance("GoalFieldEqual", {
+        "instance": Instance("InstanceField", {
+            "instance": eneity,
+            "field": "is_on",
+        }),
+        "value": Instance("Boolean", {
+            "value": True,
+        }),
+    })
+    goal = traverse_lrd(goal)
+
+    act_on_entity(
+        act=Instance(goal.fields.action),
+        entity=goal.fields.instance,
+    )
 
 
 def achieve_state_goal(entity: CircuitLED, state: TurnedOnState):
@@ -305,8 +330,8 @@ def evaluate(expression: MathExpressionInParenthesis):
 def react_on_user_message(sentence: PrintMathExpression):
     result = evaluate(sentence.fields.expression)
     print(result.fields.value)
-    
-    
-def react_on_user_message(sentence: BinaryMathExpression):
-    result = evaluate(sentence)
-    print(result.fields.value)
+
+
+def act_on_entity(act: PressAction, entity: Button):
+    print('pressing the button')
+

@@ -79,6 +79,34 @@ class WorldModel(AgentModule):
         props.clear()
         
         return instance
+    
+    def get_out_field_node(self, instance_id: str, field_name: str) -> 'InstanceField':
+        """ Returns InstanceField for a given instance and field name
+        Instance -> InstanceField -> Instance
+        """
+        for edge in self.edges:
+            if edge.start == instance_id and edge.name == field_name:
+                return self.node_by_id[edge.end]
+    
+    def get_instance_field_instance(self, field_id: str) -> 'Instance':
+        for edge in self.edges:
+            if edge.end == field_id:
+                return self.node_by_id[edge.start]
+        
+        raise ValueError(f"InstanceField {field_id} has no value")
+
+    def get_inverse_fields(self, instance_id: str) -> list[tuple['Instance', 'InstanceField']]:
+        fields = [
+            self.node_by_id[edge.start]
+            for edge in self.edges
+            if edge.end == instance_id
+        ]
+        instances = [
+            self.get_instance_field_instance(field.id)
+            for field in fields
+        ]
+    
+        return list(zip(instances, fields))
         
     def create_field(self, instance_id: str, name: str) -> 'InstanceField':
         field = InstanceField(name, self)

@@ -21,6 +21,7 @@ class Instance(WorldModelNode):
         self.__properties = fields or {}
         self.world_model: Optional[WorldModel] = None
         self.fields = InstanceFieldsView(self)
+        self.out_fields = InstanceOutFieldsView(self)
     
     def change_world_model(self, world_model: WorldModel):
         if self.world_model is None:
@@ -96,6 +97,17 @@ class Instance(WorldModelNode):
             equal_fields = self.__properties == other_instance.__properties
             return equal_names and equal_fields
         else: return False
+
+
+class InstanceOutFieldsView:
+    """ Aggregates parenting fields and relations of the instance """
+
+    def __init__(self, instance: Instance):
+        self._instance: Instance = instance
+
+    def get(self):
+        assert self._instance.world_model is not None
+        return self._instance.world_model.get_inverse_fields(self._instance.id)
 
 
 class InstanceFieldsView:

@@ -32,10 +32,18 @@ def get_word_concepts(word, kb: KnowledgeBase):
 pattern_map = PatternMap.from_list([
     Pattern("ActOnReferencedEntityStatement", [
         PatternNode("Act", "act"),
-        PatternNode("IndefiniteEntityReference", id="reference"),
+        PatternNode("EntityReference", id="reference"),
     ]),
     Pattern("IndefiniteEntityReference", [
         PatternNode("POS_IndefiniteArticle"),
+        PatternNode("EntityClass", id="ref_class"),
+    ]),
+    Pattern("IndefinitePluralEntityReference", [
+        PatternNode("POS_IndefiniteArticle"),
+        PatternNode("PluralEntityClass", id="ref_class"),
+    ]),
+    Pattern("DefiniteEntityReference", [
+        PatternNode("POS_DefiniteArticle"),
         PatternNode("EntityClass", id="ref_class"),
     ]),
     Pattern("GreetingStatement", [
@@ -71,6 +79,35 @@ pattern_map = PatternMap.from_list([
         PatternNode("LeftParenthesis"),
         PatternNode("MathExpression", id="expression"),
         PatternNode("RightParenthesis"),
+    ]),
+
+    Pattern("InOrderTo", [
+        PatternNode("Word_in"),
+        PatternNode("Word_order"),
+        PatternNode("Word_to"),
+    ]),
+    Pattern("YouNeedTo", [
+        PatternNode("Word_you"),
+        PatternNode("Word_need"),
+        PatternNode("Word_to"),
+    ]),
+    Pattern("Act_IOT_Act", [
+        PatternNode("InOrderTo"),
+        PatternNode("ActOnReferencedEntityStatement"),
+        PatternNode("YouNeedTo"),
+        PatternNode("ActOnReferencedEntityStatement"),
+    ]),
+
+    Pattern("ConceptIsConcept", [
+        PatternNode("IndefiniteEntityReference"),
+        PatternNode("Word_is"),
+        PatternNode("IndefiniteEntityReference"),
+    ]),
+
+    Pattern("ConceptAreConcept", [
+        PatternNode("IndefinitePluralEntityReference"),
+        PatternNode("Word_are"),
+        PatternNode("IndefinitePluralEntityReference"),
     ]),
 ])
 
