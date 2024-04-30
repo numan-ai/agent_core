@@ -1,0 +1,232 @@
+{
+    "nodes": [
+        {
+            "name": "m_e",
+            "node_type": "object",
+            "id": 0,
+            "value": false,
+            "position": [
+                690,
+                394
+            ]
+        },
+        {
+            "name": "dressed",
+            "node_type": "attribute",
+            "id": 1,
+            "value": false,
+            "position": [
+                412,
+                379
+            ]
+        },
+        {
+            "name": "out",
+            "node_type": "attribute",
+            "id": 2,
+            "value": false,
+            "position": [
+                1051,
+                386
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": 3,
+            "value": false,
+            "position": [
+                397,
+                164
+            ]
+        },
+        {
+            "name": "x = True",
+            "node_type": "function",
+            "id": 4,
+            "value": false,
+            "position": [
+                1051,
+                125
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": 5,
+            "value": false,
+            "position": [
+                421,
+                652
+            ]
+        },
+        {
+            "name": "x = False",
+            "node_type": "function",
+            "id": 6,
+            "value": false,
+            "position": [
+                1059,
+                655
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "if_function",
+            "id": 7,
+            "value": false,
+            "position": [
+                768,
+                205
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": 8,
+            "value": false,
+            "position": [
+                159,
+                278
+            ]
+        },
+        {
+            "name": "x == True",
+            "node_type": "consequence",
+            "id": 9,
+            "value": false,
+            "position": [
+                1266,
+                264
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": 10,
+            "value": false,
+            "position": [
+                156,
+                549
+            ]
+        },
+        {
+            "name": "x == False",
+            "node_type": "consequence",
+            "id": 11,
+            "value": false,
+            "position": [
+                1285,
+                541
+            ]
+        },
+        {
+            "name": "actions",
+            "node_type": "actions",
+            "id": 12,
+            "value": false,
+            "position": [
+                760,
+                652
+            ]
+        }
+    ],
+    "edges": [
+        {
+            "from_id": 0,
+            "to_id": 1,
+            "name": "att",
+            "id": "0f698d0c-117b-4619-a43d-6bcca6a2afbd"
+        },
+        {
+            "from_id": 0,
+            "to_id": 2,
+            "name": "att",
+            "id": "3ca214a0-5ea3-411d-8494-d08a3c8ff60e"
+        },
+        {
+            "from_id": 1,
+            "to_id": 3,
+            "name": "x",
+            "id": "c629d017-653a-47bb-9b6d-560cd3d346ad"
+        },
+        {
+            "from_id": 1,
+            "to_id": 5,
+            "name": "x",
+            "id": "2ffacc2a-0360-4c88-9dd5-b4bd1694b2a4"
+        },
+        {
+            "from_id": 2,
+            "to_id": 4,
+            "name": "x",
+            "id": "e0413f52-e580-4aca-a9cc-19efd033d60f"
+        },
+        {
+            "from_id": 2,
+            "to_id": 6,
+            "name": "x",
+            "id": "ef2b790d-1ec7-4989-bf86-8dbee55b5d0a"
+        },
+        {
+            "from_id": 1,
+            "to_id": 7,
+            "name": "x",
+            "id": "554426af-3d1f-4182-96d7-744d2208e4b7"
+        },
+        {
+            "from_id": 7,
+            "to_id": 4,
+            "name": "pvk",
+            "id": "201e9116-65a5-4358-b2ab-f295e74f332b"
+        },
+        {
+            "from_id": 3,
+            "to_id": 8,
+            "name": "con",
+            "id": "8b2fe944-bb50-4710-8509-ab60f4776fc4"
+        },
+        {
+            "from_id": 4,
+            "to_id": 9,
+            "name": "con",
+            "id": "3477c86a-6330-4c08-8ad8-2134d0f0f608"
+        },
+        {
+            "from_id": 5,
+            "to_id": 10,
+            "name": "con",
+            "id": "0bf8c8c7-2df3-401c-a7da-f9cfcee7e12f"
+        },
+        {
+            "from_id": 6,
+            "to_id": 11,
+            "name": "con",
+            "id": "08d9bb08-9696-4154-8a7d-36494adb4da3"
+        },
+        {
+            "from_id": 12,
+            "to_id": 3,
+            "name": "pvk dress",
+            "id": "8fcb77e1-f110-4284-a945-1843b987f44a"
+        },
+        {
+            "from_id": 12,
+            "to_id": 5,
+            "name": "pvk undress",
+            "id": "37af8121-6882-4e55-8443-b8d7296f4eee"
+        },
+        {
+            "from_id": 12,
+            "to_id": 6,
+            "name": "pvk go in",
+            "id": "60f18f6f-e076-4d67-a416-9e0555f19da6"
+        },
+        {
+            "from_id": 12,
+            "to_id": 7,
+            "name": "pvk go out",
+            "id": "1322e8c5-3a69-4a4d-8630-7a92ced89c74"
+        }
+    ]
+}
