@@ -38,7 +38,7 @@ def react_on_user_message(sentence: IsEntityInStateStatement):
 
 def react_on_user_message(sentence: LogicOfActionStatement):
     print(sentence)
-    
+
 
 def react_on_user_message(sentence: ActOnReferencedEntityStatement(reference=DefiniteEntityReference)):
     # resolve "the button" to an entity
@@ -291,8 +291,6 @@ def react_on_user_message(sentence: GreetingStatement):
 def evaluate(expression: BinaryMathExpression(sign=PlusSign)):
     left = evaluate(expression.fields.left)
     right = evaluate(expression.fields.right)
-    _print('a', left)
-    _print('b', right)
     return Number(left.fields.value + right.fields.value)
 
 
@@ -312,7 +310,6 @@ def evaluate(expression: BinaryMathExpression(sign=DivisionSign)):
     left = evaluate(expression.fields.left)
     right = evaluate(expression.fields.right)
     return Number(left.fields.value / right.fields.value)
-
 
 
 def evaluate(expression: BinaryMathExpression(sign=GreaterThanSign)):
@@ -358,3 +355,7 @@ def act_on_entity(act: PressAction, entity: Button):
     api.press(entity.fields.id)
     print('pressing the button')
 
+
+def act_on_entity(act: PressAction, entity: Switch):
+    api.press(entity.fields.id)
+    print('pressing the switch')
