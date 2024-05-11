@@ -29,52 +29,57 @@ Ambiguity influence types:
 """
 
 
-sentence = ["Word_my", "Word_brother", "Word_is", "Word_running", ]
+sentence = [
+    "Word_my", "Word_brother", "Word_is", "Word_running", 
+    "Word_my", "Word_brother", "Word_is", "Word_far",
+]
+
+patterns = {
+    "LivingEntityIsDoingActivity": ["LivingEntity", "IsDoing", "Activity"],
+    "NonLivingEntityIsDoingActivity": ["NonLivingEntity", "IsDoing", "Activity"],
+    "NonLivingEntityIsBeingFar": ["NonLivingEntity", "IsBeing", "DistanceFar"],
+    "LivingEntityIsBeingFar": ["LivingEntity", "IsBeing", "DistanceFar"],
+    "NonLivingEntity": ["PossessivePronoun", "Hobby"],
+    "LivingEntity": ["PossessivePronoun", "RelativeBrother"],
+    "NonLivingEntity": ["PossessivePronoun", "Home"],
+}
+
+word_concepts = {
+    "Word_my": ["PossessivePronoun"],
+    "Word_hobby": ["Hobby"],
+    "Word_brother": ["RelativeBrother"],
+    "Word_home": ["Home"],
+    "Word_is": ["IsBeing", "IsDoing"],
+    "Word_running": ["Activity", "Process"],
+    "Word_far": ["DistanceFar"],
+}
+
+hierarchy = DictHierarchy(children={
+    "Activity": ["ActivityRunning"],
+    "Process": ["ProcessRunning"],
+    "LivingEntity": ["RelativeBrother", ],
+})
 
 aeg = AssociativeEnergyGraph([
-    ("Word_my", "PossessivePronoun", 1.0),
-    ("Word_hobby", "Hobby", 1.0),
-    ("Word_brother", "RelativeBrother", 1.0),
-    ("Word_is", "IsBeing", 1.0),
-    ("Word_is", "IsDoing", 1.0),
-    ("Word_running", "Activity", 1.0),
-    ("Word_running", "Process", 1.0),
 
-    # ("PossessivePronoun", "NonLivingEntity", 1.0),
-    # ("PossessivePronoun", "LivingEntity", 1.0),
-    # ("Hobby", "NonLivingEntity", 1.0),
-    # ("RelativeBrother", "LivingEntity", 1.0),
-
-    # ('NonLivingEntity', 'NonLivingEntityIsDoingActivity', 1.0),
-    # ('LivingEntity', 'LivingEntityIsDoingActivity', 1.0),
-    # ('IsDoing', 'LivingEntityIsDoingActivity', 1.0),
-    # ('Activity', 'LivingEntityIsDoingActivity', 1.0),
 ], bidirectional=False)
 
 global_level = aeg.add_energy_layer("global")
 local_level = aeg.add_energy_layer("local")
 
-patterns = {
-    "LivingEntityIsDoingActivity": ["LivingEntity", "IsDoing", "Activity"],
-    "NonLivingEntityIsDoingActivity": ["NonLivingEntity", "IsDoing", "Activity"],
-    "NonLivingEntity": ["PossessivePronoun", "Hobby"],
-    "LivingEntity": ["PossessivePronoun", "RelativeBrother"],
-}
+for word, concepts in word_concepts.items():
+    for concept in concepts:
+        aeg.set_weight(word, concept, 1.0)
 
 for pattern_concept, pattern_nodes in patterns.items():
     for pattern_node in pattern_nodes:
         aeg.set_weight(pattern_node, pattern_concept, 1.0)
 
-
-# hierarchy = DictHierarchy(children={
-#     "Activity": ["ActivityRunning"],
-#     "Process": ["ProcessRunning"],
-#     "LivingEntity": ["RelativeBrother", ],
-# })
-
-pattern_name = None
+pattern_concept = None
 pattern_nodes = None
 pattern_idx = 0
+
+collected_words = []
 
 for word_idx in range(len(sentence)):
     local_level.add_energy(sentence[word_idx], energy=1.0, propagation=1.0)
@@ -83,34 +88,56 @@ for word_idx in range(len(sentence)):
         local_level.add_energy(sentence[word_idx + 1], energy=1.0, propagation=1.0)
 
     concept = aeg.lookup(sentence[word_idx])[0][0]
+    collected_words.append(sentence[word_idx])
+
     if pattern_nodes is None:
         pattern_concept = aeg.lookup(concept)[0][0]
-        pattern_name = pattern_concept
         pattern_nodes = patterns[pattern_concept]
+
+        print("Matching:", pattern_concept, pattern_nodes)
 
         for pattern_node in pattern_nodes[1:]:
             local_level.add_energy(pattern_node, energy=1.0, propagation=1.0)
     else:
-        node_concept = pattern_nodes[pattern_idx]
-        if node_concept != concept:
-            # match failed, try another option
-            raise NotImplementedError("Pattern node does not match concept")
+        pattern_concept = aeg.lookup(concept)[0][0]
+        pattern_nodes = patterns[pattern_concept]
+
+        assert len(pattern_nodes) >= len(collected_words)
+
+        # check that the pattern matches collected nodes
+        for node_idx in range(len(collected_words)):
+            breakpoint()
+            if pattern_nodes[node_idx] != collected_nodes[node_idx]:
+                # match failed, try another option
+                raise NotImplementedError("Pattern node does not match concept")
 
     pattern_idx += 1
 
     if len(pattern_nodes) == pattern_idx:
-        print("Pattern matched", pattern_name)
+        print("Pattern matched")
+        aeg.reset_energies(layer_name="local")
+        collected_words.clear()
+
         if word_idx == len(sentence) - 1:
             break
-        # find new pattern
-        pattern_concept = aeg.lookup(pattern_name)[0][0]
-        pattern_name = pattern_concept
-        pattern_nodes = patterns[pattern_concept]
+        pattern_concepts = aeg.lookup(pattern_concept)
+        
+        if len(pattern_concepts) == 0:
+            print("No more bigger patterns found")
+            # looking for the next pattern
+            pattern_concept = None
+            pattern_nodes = None
+            pattern_idx = 0
+        else:
+            collected_words.append(None)
+            pattern_concept = pattern_concepts[0][0]
+            pattern_nodes = patterns[pattern_concept]
+            print("Matching:", pattern_concept, pattern_nodes)
 
-        pattern_idx = 1
+            pattern_idx = 1
 
-        for pattern_node in pattern_nodes[1:]:
-            local_level.add_energy(pattern_node, energy=1.0, propagation=1.0)
+            for pattern_node in pattern_nodes[1:]:
+                local_level.add_energy(pattern_node, energy=1.0, propagation=1.0)
 
 if len(pattern_nodes) != pattern_idx:
     print("Pattern NOT matched", pattern_name)
