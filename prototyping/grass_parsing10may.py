@@ -27,7 +27,7 @@ Ambiguity influence types:
 
 sentence = [
     "Word_my", "Word_brother", "Word_is", "Word_running", 
-    "Word_my", "Word_brother", "Word_is", "Word_far",
+    # "Word_my", "Word_brother", "Word_is", "Word_far",
 ]
 
 patterns = {
@@ -80,6 +80,10 @@ class Match:
         self.aeg = aeg
         self.energy_layer_name = str(uuid.uuid4())
         self.energy_layer = aeg.get_energy_layer(self.energy_layer_name)
+
+        self.parent_energy_layer_name = str(uuid.uuid4())
+        self.parent_energy_layer = aeg.get_energy_layer(self.parent_energy_layer_name)
+
         self.is_finished = False
         self.is_failed = False
         self.pattern_name = None
@@ -89,6 +93,7 @@ class Match:
         self.concepts.clear()
         self.child_matches.clear()
         self.energy_layer.energy.clear()
+        self.parent_energy_layer.energy.clear()
         self.size = 0
         self.is_finished = False
         self.is_failed = False
@@ -97,10 +102,48 @@ class Match:
     def check_stability(self, layers):
         pattern_name = self.aeg.lookup(
             *self.concepts,
-            layer_names=layers
+            layer_names=layers + [
+                self.parent_energy_layer_name
+            ]
         )[0][0]
 
         return pattern_name == self.pattern_name
+    
+    def shake(self, layers):
+        pattern_name = self.aeg.lookup(
+            *self.concepts,
+            layer_names=layers + [
+                self.parent_energy_layer_name
+            ]
+        )[0][0]
+
+        pattern_nodes = patterns[pattern_name]
+
+        assert len(pattern_nodes) == len(self.concepts)
+
+        for idx, (pattern_node, child_match) in enumerate(zip(pattern_nodes, self.child_matches)):
+            if child_match is None:
+                assert pattern_node == self.concepts[idx]
+                continue
+            assert child_match.is_finished is True
+            assert child_match.pattern_name == pattern_node
+
+        self.is_finished = True
+        self.pattern_name = pattern_name
+    
+    def propagate_parent_energy(self, pattern_name, energy):
+        pattern_nodes = patterns[pattern_name]
+
+        for pattern_node, child_match in zip(pattern_nodes, self.child_matches):
+            if child_match is None:
+                continue
+            child_match.parent_energy_layer.energy.clear()
+            child_match.parent_energy_layer.add_energy(pattern_node, energy, 0.75)
+            child_match.propagate_parent_energy(child_match.pattern_name, energy)
+            if not child_match.check_stability([]):
+                # breakpoint()
+                child_match.shake([])
+                continue
 
     def add_concept(self, concept, match, layers):
         self.concepts.append(concept)
@@ -115,12 +158,16 @@ class Match:
         try:
             pattern_name = self.aeg.lookup(
                 *self.concepts,
-                layer_names=layers
+                layer_names=layers + [
+                    self.parent_energy_layer_name
+                ]
             )[0][0]
         except IndexError:
             self.is_failed = True
 
         pattern_nodes = patterns[pattern_name]
+
+        self.propagate_parent_energy(pattern_name, 1.0)
 
         for i, concept in enumerate(self.concepts):
             if concept != pattern_nodes[i]:
@@ -161,11 +208,11 @@ class MatchTree:
                 if not sub_match.is_finished:
                     continue
 
-                if not sub_match.check_stability([
-                    match.energy_layer_name,
-                ]):
-                    breakpoint()
-                    pass
+                # if not sub_match.check_stability([
+                #     match.energy_layer_name,
+                # ]):
+                #     breakpoint()
+                #     pass
 
         new_concept = self.concepts[x + idx]
         new_size = 1
@@ -177,12 +224,22 @@ class MatchTree:
                 new_size = match_layer[x + idx].size
                 sub_match = match_layer[x + idx]
                 break
+
+        assert match.is_finished is False
+        # if match.child_matches and match.child_matches[0] is None:
+        #     breakpoint()
         
         match.add_concept(new_concept, sub_match, layers)
         match.size += new_size
 
         print(x, y, new_concept, match.size, match.is_finished, match.is_failed)
-        breakpoint()
+
+        if match.is_failed:
+            for child_match in match.child_matches:
+                if child_match is None:
+                    continue
+                breakpoint()
+                child_match.shake([])
 
         if match.is_finished:
             self.process(x, y + 1, 0, call_stack)
@@ -220,3 +277,6 @@ class MatchTree:
 
 mt = MatchTree(sentence, aeg)
 mt.match()
+
+breakpoint()
+pass
