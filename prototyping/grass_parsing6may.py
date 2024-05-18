@@ -64,8 +64,8 @@ aeg = AssociativeEnergyGraph([
 
 ], bidirectional=False)
 
-global_level = aeg.add_energy_layer("global")
-local_level = aeg.add_energy_layer("local")
+global_level = aeg.get_energy_layer("global")
+local_level = aeg.get_energy_layer("local")
 
 for word, concepts in word_concepts.items():
     for concept in concepts:
@@ -107,7 +107,7 @@ for word_idx in range(len(sentence)):
         # check that the pattern matches collected nodes
         for node_idx in range(len(collected_words)):
             breakpoint()
-            if pattern_nodes[node_idx] != collected_nodes[node_idx]:
+            if pattern_nodes[node_idx] != collected_words[node_idx]:
                 # match failed, try another option
                 raise NotImplementedError("Pattern node does not match concept")
 

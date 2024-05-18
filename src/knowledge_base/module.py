@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 import os
 import abc
 import enum
@@ -479,3 +480,19 @@ class KnowledgeBase(BaseKnowledgeBase, AgentModule):
             children[parent['name']].append(child['name'])
 
         return parents, children
+
+    def upsert_concept(self, name: str, x: int = 100, y: int = 100):
+        concept = self.find_concept(name, should_raise=False)
+        if concept:
+            return concept
+        
+        return self.new_concept(name, x, y)
+
+    def new_concept(self, name: str, x: int = 100, y: int = 100):
+        return self.new_node("Concept", {
+            "name": name,
+            "_meta": json.dumps({
+                "x": x,
+                "y": y,
+            })
+        })

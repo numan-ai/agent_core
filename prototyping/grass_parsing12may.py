@@ -5,27 +5,6 @@ from typing import Hashable, Optional
 
 from src.knowledge_base.hierarchy import DictHierarchy
 
-# we can't find all concepts of any word.
-# because any word has a concept of "LiteralWord", which will make the parsing so much slower.
-# or we can..
-
-
-"""
-PROBLEMS FOR PARSING:
-+ linear-time parsing
-+ words can be ambiguous and their meaning depends on different things (list them)
-+ structure around conjunctions is ambiguous
-+ statements can have no separation between them
-- incorrect tense can be used for (I did looked), but people still understand this. same for other word forms
-- sentences can have unknown words, but the structure can still be understood
-
-Ambiguity influence types:
-+ running (previous words trigger the correct pattern). Done with the local context energies.
-+ and/light (next words trigger the correct pattern). When we fail to continue building the pattern we update the energies with the new words and concepts and try again.
-- crane (local context? influences associations). We build WM representation of the sentence and once we see that the context was wrong we rebuild it, reevaluating the meaning of the sentence
-+ apple (general context?, mentioned words before influece associations). Solved by adding another layer of energies for the global context.
-"""
-
 
 @dataclass
 class Pattern:
