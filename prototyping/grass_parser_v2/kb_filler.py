@@ -14,22 +14,24 @@ output singular form if it exists.
 
 themes = [
     ("possessive pronouns", "Possessor", 7),
-    # ("fruits", "Fruit", 10),
-    # ("vegetables", "Vegetable", 10),
-    # ("animals", "Animal", 10),
-    # ("birds", "Bird", 5),
-    # ("fishes", "Fish", 5),
-    # ("insects", "Insect", 5),
-    # ("flowers", "Flower", 10),
-    # ("transports", "Transport", 5),
-    # ("colors", "Color", 10),
-    # ("shapes", "Shape", 5),
-    # ("countries", "Country", 20),
-    # ("languages", "Language", 20),
-    # ("professions", "Profession", 20),
-    # ("sports", "Sport", 10),
-    # ("musical_instruments", "MusicalInstrument", 10),
-    # ("clothes", "Clothing", 10),
+    ("fruits", "Fruit", 10),
+    ("vegetables", "Vegetable", 10),
+    ("animals", "Animal", 10),
+    ("birds", "Bird", 5),
+    ("fishes", "Fish", 5),
+    ("insects", "Insect", 5),
+    ("flowers", "Flower", 10),
+    ("transports", "Transport", 5),
+    ("colors", "Color", 10),
+    ("shapes", "Shape", 5),
+    ("countries", "Country", 20),
+    ("languages", "Language", 20),
+    ("professions", "Profession", 20),
+    ("sports", "Sport", 10),
+    ("musical_instruments", "MusicalInstrument", 10),
+    ("clothes", "Clothing", 10),
+    ("qualitative measures (e.g. Significant, Negligible, Slight)", "Qualitative Measures", 10),
+    ("color description (e.g. bright)", "ColorDescription", 10),
 ]
 
 kb = KnowledgeBase(None)
@@ -83,7 +85,7 @@ for theme, parent_name, count in themes:
 
     for concept_name in concept_names:
         x += 200
-        concept = kb.upsert_concept(f"{concept_name}{parent_name}", x, y)
-        kb.upsert_edge("parents", concept.id, parent.id, {})
+        concept = kb.upsert_concept(f"{concept_name}_{parent_name}", x, y)
+        kb.upsert_edge("parent", concept.id, parent.id, {})
 
     y += 1000

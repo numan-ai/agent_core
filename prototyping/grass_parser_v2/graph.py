@@ -1,5 +1,3 @@
-
-
 import bisect
 
 from collections import defaultdict
@@ -156,7 +154,7 @@ class Graph:
         indices: list[int], 
         weights: Optional[list[float]] = None, 
         depth: int = 1, 
-        depth_decay: float = 0.5,
+        depth_decay: dict[str, float] = None,
         index_mismatch_penalty = 0.5,
         energy_map: Optional[NodeEnergyMap] = None,
         result_edge_types: Optional[set[str]] = None,
@@ -164,6 +162,9 @@ class Graph:
     ):
         if weights is None:
             weights = [1] * len(nodes)
+
+        if depth_decay is None:
+            depth_decay = {}
         
         initial_nodes = set(nodes)
         
@@ -195,13 +196,11 @@ class Graph:
                         result[edge.end] += weight * mismatch_multiplier
                     
                     if edge.type_name in transition_edge_types:
-                        transition_multiplier = 1.0
-                        if edge.type_name == "pattern":
-                            transition_multiplier = 0.5
                         new_nodes.append(edge.end)
-                        new_weights.append(weight * (1 - depth_decay) * transition_multiplier)
+                        _depth_decay = depth_decay.get(edge.type_name, 0.0)
+                        new_weights.append(input_weight * (1 - _depth_decay))
                         new_indices.append(input_index)
-                    
+
             nodes = new_nodes
             weights = new_weights
             indices = new_indices
