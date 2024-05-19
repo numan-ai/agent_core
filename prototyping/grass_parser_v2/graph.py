@@ -162,9 +162,9 @@ class Graph:
         result_edge_types: Optional[set[str]] = None,
         transition_edge_types: Optional[set[str]] = None,
     ):
-        true_pattern_match = {
-            index: True for index in indices
-        }
+        true_pattern_match = [
+            True for _ in range(len(nodes))
+        ]
 
         if weights is None:
             weights = [1] * len(nodes)
@@ -183,8 +183,9 @@ class Graph:
             new_nodes = []
             new_weights = []
             new_indices = []
+            new_true_pattern_match = []
 
-            for node, input_index, input_weight in zip(nodes, indices, weights):
+            for node, input_index, input_weight, is_true_pm in zip(nodes, indices, weights, true_pattern_match):
                 pq = self.priority_queues[node]
                 iteration_limit = min(self.max_iterations, len(pq))
 
@@ -199,27 +200,28 @@ class Graph:
                             mismatch_multiplier = (1 - index_mismatch_penalty) ** index_mismatch_size
                             if input_index == 0 or edge.index == 0:
                                 # we require the first index of the pattern to match
-                                continue
+                                # but don't skip the node propagation, 
+                                # since this pattern can be a transition
+                                mismatch_multiplier = 0.0
                         else:
                             mismatch_multiplier = 1.0
 
-                        if true_pattern_match[input_index] is False:
+                        if is_true_pm is False:
                             mismatch_multiplier *= 0.5
 
                         result[edge.end] += weight * mismatch_multiplier / self.sizes[edge.end]
 
-                    if edge.type_name == 'pattern':
-                        true_pattern_match[input_index] = False
-                    
                     if edge.type_name in transition_edge_types:
                         new_nodes.append(edge.end)
                         _depth_decay = depth_decay.get(edge.type_name, 0.0)
                         new_weights.append(input_weight * (1 - _depth_decay))
                         new_indices.append(input_index)
+                        new_true_pattern_match.append(is_true_pm and edge.type_name != 'pattern')
 
             nodes = new_nodes
             weights = new_weights
             indices = new_indices
+            true_pattern_match = new_true_pattern_match
 
         return [
             (x[0], round(x[1] - x[1] * (1 - self._decay_factor), 3))

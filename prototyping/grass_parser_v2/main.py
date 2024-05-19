@@ -25,8 +25,8 @@ from src.knowledge_base.hierarchy import DictHierarchy
 
 # sentence = collected['DT+JJ+NN'][1]
 
-# sentence = ["i", "saw", "a", "crane", "i", "saw"]
-sentence = ["my", "brother", "is", "running"]
+sentence = ["i", "saw", "a", "crane", "i", "saw"]
+# sentence = ["my", "brother", "is", "running"]
 # "on", "the", "construction", "site"]
 # breakpoint()
 
@@ -101,8 +101,6 @@ patterns = [
     Pattern("IndefiniteEntityReference", [
         "IndefiniteArticleA", "Entity",
     ]),
-    # Pattern("P1", ["A", "B", "C"]),
-    # Pattern("P2", ["C", "A", "B"]),
 ]
 
 word_concepts = {
@@ -237,43 +235,7 @@ class Tree:
 
         indices = list(range(len(concepts)))
 
-        emap = NodeEnergyMap(g)
-        words = []
-
-        for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + size + 1 + 2)):
-            word_concept = self.layers[0][word_idx].concept
-            emap.add_energy(word_concept, 0.3, propagation={
-                "pattern": 1.0,
-                "parent": 0.9,
-            }, commit=False)
-            words.append(word_concept)
-
-            for layer in self.layers[1:]:
-                match_concept = layer[word_idx].concept
-                if match_concept is None:
-                    continue
-                emap.add_energy(match_concept, 0.3, propagation={
-                    "pattern": 1.0,
-                    "parent": 0.9,
-                }, commit=False)
-        
-        print('concepts', concepts)
-        emap.reverse_propagate(propagation=1.0)
-        emap.energies[''] = 0
-
-        res = g.lookup(
-            *concepts,
-            indices=indices,
-            depth=5,
-            depth_decay={
-                "pattern": 0.5,
-                "parent": 0.0,
-            },
-            energy_map=emap,
-            index_mismatch_penalty=0.5,
-            result_edge_types={"pattern", },
-            transition_edge_types={"parent", "pattern"},
-        )
+        res = self._make_lookup(idx, size, concepts, indices)
 
         if not res:
             print("Can't expand, starting a new tree")
@@ -303,11 +265,11 @@ class Tree:
             if node not in hierarchy.get_parents(match.concept):
                 print('not equal!!')
                 if new_idx == idx:
+                    self.call_stack.append((idx + size + 1, 0))
                     # full mismatch
                     return
                 # on unsuccessful match go try matching further
                 # and then come back
-                # new_idx = idx + matches[0].size
                 self.call_stack.append((idx, size))
                 self.call_stack.append((new_idx, 0))
                 return
@@ -359,6 +321,53 @@ class Tree:
             self.call_stack.append((idx, size))
             return
         
+    def _make_lookup(self, idx, size, concepts, indices):
+        emap = NodeEnergyMap(g)
+        words = []
+
+        for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + size + 1 + 2)):
+            word_concept = self.layers[0][word_idx].concept
+            emap.add_energy(word_concept, 0.3, propagation={
+                "pattern": 1.0,
+                "parent": 0.9,
+            }, commit=False)
+            words.append(word_concept)
+
+            for layer in self.layers[1:]:
+                match_concept = layer[word_idx].concept
+                if match_concept is None:
+                    continue
+                emap.add_energy(match_concept, 0.3, propagation={
+                    "pattern": 1.0,
+                    "parent": 0.9,
+                }, commit=False)
+        
+        print('concepts', concepts)
+        emap.reverse_propagate(propagation=1.0)
+        emap.energies[''] = 0
+
+        # if concepts == ['LivingEntity', 'Word_is', 'Word_running']:
+        #     breakpoint()
+
+        res = g.lookup(
+            *concepts,
+            indices=indices,
+            depth=5,
+            depth_decay={
+                "pattern": 0.5,
+                "parent": 0.0,
+            },
+            energy_map=emap,
+            index_mismatch_penalty=0.5,
+            result_edge_types={"pattern", },
+            transition_edge_types={"parent", "pattern"},
+        )
+
+        # if res[0][0] == 'EtityDidAction':
+            # breakpoint()
+
+        return res
+
     def validate_column(self, idx):
         for layer in self.layers[1: ]:
             match = layer[idx]
@@ -402,43 +411,7 @@ class Tree:
 
         indices = list(range(len(concepts)))
 
-        emap = NodeEnergyMap(g)
-        words = []
-
-        for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + match.size + 1 + 2)):
-            word_concept = self.layers[0][word_idx].concept
-            emap.add_energy(word_concept, 0.3, propagation={
-                "pattern": 1.0,
-                "parent": 0.9,
-            }, commit=False)
-            words.append(word_concept)
-
-            for layer in self.layers[1:]:
-                match_concept = layer[word_idx].concept
-                if match_concept is None:
-                    continue
-                emap.add_energy(match_concept, 0.3, propagation={
-                    "pattern": 1.0,
-                    "parent": 0.9,
-                }, commit=False)
-        
-        print('concepts', concepts)
-        emap.reverse_propagate(propagation=1.0)
-        emap.energies[''] = 0
-
-        res = g.lookup(
-            *concepts,
-            indices=indices,
-            depth=5,
-            depth_decay={
-                "pattern": 0.5,
-                "parent": 0.0,
-            },
-            energy_map=emap,
-            index_mismatch_penalty=0.5,
-            result_edge_types={"pattern", },
-            transition_edge_types={"parent", "pattern"},
-        )
+        res = self._make_lookup(idx, match.size, concepts, indices)
 
         if not res:
             breakpoint()
