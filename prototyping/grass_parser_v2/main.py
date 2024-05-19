@@ -25,7 +25,8 @@ from src.knowledge_base.hierarchy import DictHierarchy
 
 # sentence = collected['DT+JJ+NN'][1]
 
-sentence = ["i", "saw", "a", "crane", "i", "saw"]
+# sentence = ["i", "saw", "a", "crane", "i", "saw"]
+sentence = ["my", "brother", "is", "running"]
 # "on", "the", "construction", "site"]
 # breakpoint()
 
@@ -146,7 +147,7 @@ hierarchy = DictHierarchy(children={
     "ActionPast": ["SawPastAction", ],
     "Action": ["ActionPast", ],
     "LivingEntity": ["RelativeBrother", "I", ],
-    "Entity": ["LivingEntity", "NonLivingEntity", ],
+    "Entity": ["LivingEntity", "NonLivingEntity", "IndefiniteEntityReference"],
     "NonLivingEntity": ["ConstructionCrane", ],
 })
 
@@ -180,12 +181,17 @@ class Match:
     concept: Optional[str] = None
     children: list["Match"] = field(default_factory=list, repr=False)
 
+    def __repr__(self) -> str:
+        return f"Match({self.concept}, {self.size})"
+
 
 class Tree:
     def __init__(self) -> None:
-        self.layers = [[], [], [], []]
+        self.layers = [[],]
         self.call_stack = []
+        self.validation_stack = []
         self.ambiguous_matches_queue = []
+        self.tree_locations = []
 
     def add_word(self, word: str):
         for idx, layer in enumerate(self.layers):
@@ -193,8 +199,8 @@ class Tree:
         match = self.layers[0][-1]
         match.concept = word
 
-    def match(self, idx, size, is_end: bool = False):
-        print("Matching", idx, size, "end" if is_end else "")
+    def match(self, idx, size):
+        print("Matching", idx, size)
 
         if idx + size + 1 > len(self.layers[0]):
             breakpoint()
@@ -229,9 +235,6 @@ class Tree:
                 current_idx += match.size
                 break
 
-        if is_end:
-            concepts.append("")
-
         indices = list(range(len(concepts)))
 
         emap = NodeEnergyMap(g)
@@ -239,14 +242,20 @@ class Tree:
 
         for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + size + 1 + 2)):
             word_concept = self.layers[0][word_idx].concept
-            emap.add_energy(word_concept, 0.3, propagation=0.9, commit=False)
+            emap.add_energy(word_concept, 0.3, propagation={
+                "pattern": 1.0,
+                "parent": 0.9,
+            }, commit=False)
             words.append(word_concept)
 
             for layer in self.layers[1:]:
                 match_concept = layer[word_idx].concept
                 if match_concept is None:
                     continue
-                emap.add_energy(match_concept, 0.2, propagation=0.9, commit=False)
+                emap.add_energy(match_concept, 0.3, propagation={
+                    "pattern": 1.0,
+                    "parent": 0.9,
+                }, commit=False)
         
         print('concepts', concepts)
         emap.reverse_propagate(propagation=1.0)
@@ -268,12 +277,17 @@ class Tree:
 
         if not res:
             print("Can't expand, starting a new tree")
-            assert not self.call_stack
+            self.tree_locations.append(idx)
+            # if self.call_stack:
+            #     breakpoint()
+            #     pass
+            # assert not self.call_stack
             new_idx = idx + sum([
                 match.size
                 for match in matches
             ])
-            return self.match(new_idx, 0)
+            self.call_stack.append((new_idx, 0))
+            return
         
         print('found', res[:3])
 
@@ -289,17 +303,14 @@ class Tree:
             if node not in hierarchy.get_parents(match.concept):
                 print('not equal!!')
                 if new_idx == idx:
-                    if self.call_stack:
-                        print("Fail, returning back")
-                        new_idx, new_size = self.call_stack.pop()
-                        return self.match(new_idx, new_size, is_end=False)
                     # full mismatch
                     return
                 # on unsuccessful match go try matching further
                 # and then come back
                 # new_idx = idx + matches[0].size
                 self.call_stack.append((idx, size))
-                return self.match(new_idx, 0, is_end=False)
+                self.call_stack.append((new_idx, 0))
+                return
             new_idx += match.size
 
         if len(pattern_nodes) - 1 > len(matches):
@@ -309,7 +320,8 @@ class Tree:
                 for match in matches
             ])
             print("Expanding match")
-            return self.match(idx, new_size)
+            self.call_stack.append((idx, new_size))
+            return
             
         new_layer_idx = max([
             match.layer_idx
@@ -337,12 +349,122 @@ class Tree:
             
             if self.call_stack:
                 print("Sucess, returning back")
-                new_idx, new_size = self.call_stack.pop()
-                return self.match(new_idx, new_size, is_end=False)
+                return
+            
+            if self.tree_locations:
+                self.validation_stack.append(self.tree_locations[-1])
 
             print("Sucess, try expanding up")
             # on successful match go up+forward
-            return self.match(idx, size, is_end=False)
+            self.call_stack.append((idx, size))
+            return
+        
+    def validate_column(self, idx):
+        for layer in self.layers[1: ]:
+            match = layer[idx]
+            if match.concept is None:
+                break
+            self._validate_match(idx, match)
+
+    def _validate_match(self, idx, match: Match):
+        # TODO: way too much code duplication, fix it
+        matches = []
+        concepts = []
+        indices = []
+
+        current_idx = idx
+
+        while current_idx <= idx + match.size:
+            for layer in reversed(self.layers):
+                _match = layer[current_idx]
+                if current_idx == idx and match is not _match:
+                    continue
+                if _match.concept is None:
+                    continue
+                matches.append(_match)
+                concepts.append(_match.concept)
+                current_idx += _match.size
+                break
+            else:
+                raise ValueError("No match found")
+    
+        for _ in range(2):
+            for layer in reversed(self.layers):
+                try:
+                    _match = layer[current_idx]
+                except IndexError:
+                    break
+                if _match.concept is None:
+                    continue
+                concepts.append(_match.concept)
+                current_idx += _match.size
+                break
+
+        indices = list(range(len(concepts)))
+
+        emap = NodeEnergyMap(g)
+        words = []
+
+        for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + match.size + 1 + 2)):
+            word_concept = self.layers[0][word_idx].concept
+            emap.add_energy(word_concept, 0.3, propagation={
+                "pattern": 1.0,
+                "parent": 0.9,
+            }, commit=False)
+            words.append(word_concept)
+
+            for layer in self.layers[1:]:
+                match_concept = layer[word_idx].concept
+                if match_concept is None:
+                    continue
+                emap.add_energy(match_concept, 0.3, propagation={
+                    "pattern": 1.0,
+                    "parent": 0.9,
+                }, commit=False)
+        
+        print('concepts', concepts)
+        emap.reverse_propagate(propagation=1.0)
+        emap.energies[''] = 0
+
+        res = g.lookup(
+            *concepts,
+            indices=indices,
+            depth=5,
+            depth_decay={
+                "pattern": 0.5,
+                "parent": 0.0,
+            },
+            energy_map=emap,
+            index_mismatch_penalty=0.5,
+            result_edge_types={"pattern", },
+            transition_edge_types={"parent", "pattern"},
+        )
+
+        if not res:
+            breakpoint()
+
+        if res and res[0][0] != match.concept:
+            for layer in reversed(self.layers):
+                _match = layer[idx]
+                if _match.concept is None:
+                    break
+                _match.concept = None
+                _match.children.clear()
+                if _match is match:
+                    break
+            
+            self.call_stack.append((idx, 0))
+    
+    def run(self):
+        self.call_stack.append((0, 0))
+        
+        while self.call_stack or self.validation_stack:
+            if self.validation_stack:
+                idx = self.validation_stack.pop()
+                self.validate_column(idx)
+            elif self.call_stack:
+                idx, size = self.call_stack.pop()
+                self.match(idx, size)
 
     def find_last_match(self, idx):
         last_match = None
@@ -365,7 +487,7 @@ class Tree:
 tree = Tree()
 for word in sentence:
     tree.add_word(word)
-tree.match(0, 0, is_end=False)
+tree.run()
 # lmi, lm = tree.find_last_match(0)
 # assert not tree.call_stack
 # print('\n\n\n\n\n\n')

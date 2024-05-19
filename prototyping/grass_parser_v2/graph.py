@@ -39,7 +39,7 @@ class NodeEnergyMap:
         self._energy_decay_factor = 1.0
         self.max_iterations = 1000
 
-    def add_energy(self, node: Hashable, energy: float, propagation: float = 1.0, commit: bool = False):
+    def add_energy(self, node: Hashable, energy: float, propagation: dict[float], commit: bool = False):
         """ Linearly add energy to a node and propagate it to connected nodes. """
         self._add_energy(node, energy / self._energy_decay_factor, propagation)
         
@@ -52,7 +52,7 @@ class NodeEnergyMap:
         
         self.__propagated_energy.clear()
         
-    def _add_energy(self, node: Hashable, energy: float, propagation: float = 1.0):
+    def _add_energy(self, node: Hashable, energy: float, propagation: dict[float]):
         self.__propagated_energy[node] += energy
         if energy < 0.05:
             return
@@ -63,7 +63,8 @@ class NodeEnergyMap:
             association_weight, edge = self.graph.priority_queues[node][i]
             associated_node = edge.end
             already_propagated_energy = self.__propagated_energy[associated_node]
-            energy_to_propagate = -association_weight * energy * propagation
+            _propagation = propagation[edge.type_name]
+            energy_to_propagate = -association_weight * energy * _propagation
             energy_to_propagate = energy_to_propagate - already_propagated_energy
             if energy_to_propagate <= 0.0:
                 continue
