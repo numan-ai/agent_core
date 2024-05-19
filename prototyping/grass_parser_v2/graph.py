@@ -113,6 +113,7 @@ class Graph:
         self._decay_factor = 1.0
         self.max_iterations = 100
         self.bidirectional = False
+        self.sizes = {}
 
         for edge in edges:
             self.update_edge(edge, 1.0)
@@ -150,7 +151,7 @@ class Graph:
 
     def lookup(
         self, 
-        *nodes, 
+        *nodes,
         indices: list[int], 
         weights: Optional[list[float]] = None, 
         depth: int = 1, 
@@ -160,6 +161,10 @@ class Graph:
         result_edge_types: Optional[set[str]] = None,
         transition_edge_types: Optional[set[str]] = None,
     ):
+        true_pattern_match = {
+            index: True for index in indices
+        }
+
         if weights is None:
             weights = [1] * len(nodes)
 
@@ -190,10 +195,20 @@ class Graph:
                     if edge.type_name in result_edge_types:
                         if edge.index != -1 and edge.index != input_index:
                             index_mismatch_size = abs(edge.index - input_index)
-                            mismatch_multiplier = index_mismatch_penalty ** index_mismatch_size
+                            mismatch_multiplier = (1 - index_mismatch_penalty) ** index_mismatch_size
+                            if input_index == 0 or edge.index == 0:
+                                # we require the first index of the pattern to match
+                                continue
                         else:
                             mismatch_multiplier = 1.0
-                        result[edge.end] += weight * mismatch_multiplier
+
+                        if true_pattern_match[input_index] is False:
+                            mismatch_multiplier *= 0.5
+
+                        result[edge.end] += weight * mismatch_multiplier / self.sizes[edge.end]
+
+                    if edge.type_name == 'pattern':
+                        true_pattern_match[input_index] = False
                     
                     if edge.type_name in transition_edge_types:
                         new_nodes.append(edge.end)

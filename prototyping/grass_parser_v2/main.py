@@ -9,23 +9,23 @@ from prototyping.grass_parser_v2.graph import Edge, Graph, NodeEnergyMap
 from src.knowledge_base.hierarchy import DictHierarchy
 
 
-nltk.download('conll2000')
-from nltk.corpus import conll2000
+# nltk.download('conll2000')
+# from nltk.corpus import conll2000
 
-collected = defaultdict(list)
-for tree in conll2000.chunked_sents():
-    for subtree in tree.subtrees():
-        if subtree.label() == 'NP' and subtree.height() == 2:
-            tags = [tag for word, tag in subtree.leaves()]
-            if {'CD', 'NNP', '$', '``'}.intersection(tags):
-                continue
+# collected = defaultdict(list)
+# for tree in conll2000.chunked_sents():
+#     for subtree in tree.subtrees():
+#         if subtree.label() == 'NP' and subtree.height() == 2:
+#             tags = [tag for word, tag in subtree.leaves()]
+#             if {'CD', 'NNP', '$', '``'}.intersection(tags):
+#                 continue
 
-            collected['+'.join(tags)].append(subtree.leaves())
-# sentence = conll2000.sents()[1]
+#             collected['+'.join(tags)].append(subtree.leaves())
+# # sentence = conll2000.sents()[1]
 
-sentence = collected['DT+JJ+NN'][1]
+# sentence = collected['DT+JJ+NN'][1]
 
-sentence = ["i", "saw"]#, "a", "crane", ]
+sentence = ["i", "saw", "a", "crane", "i", "saw"]
 # "on", "the", "construction", "site"]
 # breakpoint()
 
@@ -54,6 +54,11 @@ sentence = [
 #     _char_to_concept(ch)
 #     for ch in "my brother is running"
 # ]
+
+
+"""
+solution - lookup with expanded concepts by default
+"""
 
 patterns = [
     # Pattern("_IGNORE_", [
@@ -91,6 +96,9 @@ patterns = [
     ]),
     Pattern("EntityDidActionWithEntity", [
         "LivingEntity", "ActionPast", "Entity",
+    ]),
+    Pattern("IndefiniteEntityReference", [
+        "IndefiniteArticleA", "Entity",
     ]),
     # Pattern("P1", ["A", "B", "C"]),
     # Pattern("P2", ["C", "A", "B"]),
@@ -139,6 +147,7 @@ hierarchy = DictHierarchy(children={
     "Action": ["ActionPast", ],
     "LivingEntity": ["RelativeBrother", "I", ],
     "Entity": ["LivingEntity", "NonLivingEntity", ],
+    "NonLivingEntity": ["ConstructionCrane", ],
 })
 
 g = Graph([
@@ -151,12 +160,18 @@ g = Graph([
     for child in children
 ])
 
+
+for pattern in patterns:
+    g.sizes[pattern.concept] = len(pattern.nodes) - 1
+
+
 energy_map = NodeEnergyMap(g)
 g.update_edge(Edge(
     start="ConstructionSite",
     end="ConstructionCrane",
     type_name="associated",
 ), 1.0)
+
 
 @dataclass
 class Match:
@@ -201,6 +216,19 @@ class Tree:
                 current_idx += match.size
                 break
 
+            
+        for _ in range(2):
+            for layer in reversed(self.layers):
+                try:
+                    match = layer[current_idx]
+                except IndexError:
+                    break
+                if match.concept is None:
+                    continue
+                concepts.append(match.concept)
+                current_idx += match.size
+                break
+
         if is_end:
             concepts.append("")
 
@@ -229,7 +257,7 @@ class Tree:
             indices=indices,
             depth=5,
             depth_decay={
-                "pattern": 0.7,
+                "pattern": 0.5,
                 "parent": 0.0,
             },
             energy_map=emap,
@@ -239,8 +267,14 @@ class Tree:
         )
 
         if not res:
-            return
-
+            print("Can't expand, starting a new tree")
+            assert not self.call_stack
+            new_idx = idx + sum([
+                match.size
+                for match in matches
+            ])
+            return self.match(new_idx, 0)
+        
         print('found', res[:3])
 
         pattern_name = res[0][0]
@@ -254,6 +288,13 @@ class Tree:
         for match, node in zip(matches, pattern_nodes):
             if node not in hierarchy.get_parents(match.concept):
                 print('not equal!!')
+                if new_idx == idx:
+                    if self.call_stack:
+                        print("Fail, returning back")
+                        new_idx, new_size = self.call_stack.pop()
+                        return self.match(new_idx, new_size, is_end=False)
+                    # full mismatch
+                    return
                 # on unsuccessful match go try matching further
                 # and then come back
                 # new_idx = idx + matches[0].size
@@ -303,11 +344,34 @@ class Tree:
             # on successful match go up+forward
             return self.match(idx, size, is_end=False)
 
+    def find_last_match(self, idx):
+        last_match = None
+        for layer in reversed(self.layers[1:]):
+            try:
+                match = layer[idx]
+            except IndexError:
+                return None, None
+            
+            if match.concept is not None:
+                last_match = match
+                new_idx, next_match = self.find_last_match(idx + match.size)
+                if next_match is not None:
+                    return new_idx, next_match
+                return idx, last_match
+                break
+
+        return None, None
 
 tree = Tree()
 for word in sentence:
     tree.add_word(word)
 tree.match(0, 0, is_end=False)
+# lmi, lm = tree.find_last_match(0)
+# assert not tree.call_stack
+# print('\n\n\n\n\n\n')
+# tree.match(lmi + lm.size, 0, is_end=False)
+
+print("DONE")
 
 breakpoint()
 pass
