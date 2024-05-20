@@ -2,7 +2,11 @@ import bisect
 
 from collections import defaultdict
 from dataclasses import dataclass
+import random
 from typing import Hashable, Optional
+from uuid import uuid4
+
+from prototyping.grass_parser_v2.server import send_updates, positions_cache
 
 
 @dataclass(slots=True)
@@ -52,10 +56,53 @@ class NodeEnergyMap:
         
         self.__propagated_energy.clear()
         
+    def _send_ws_data(self):
+        concept_to_id_map = {
+            concept: f"_{concept}"
+            for concept in self.graph.nodes_set
+        }
+
+        for node in self.graph.nodes_set:
+            node_id = concept_to_id_map[node]
+            if node_id not in positions_cache:
+                positions_cache[node_id] = {
+                    "x": random.randint(0, 1000),
+                    "y": random.randint(0, 1000),
+                }
+
+        edges = [
+            {
+                "source": concept_to_id_map[edge.start],
+                "target": concept_to_id_map[edge.end],
+                "label": str(edge.index) if edge.index != -1 else "",
+                "type": edge.type_name,
+                "weight": 10,
+            }
+            for pq in list(self.graph.priority_queues.values())
+            for energy, edge in pq
+            if edge.start != '' and edge.end != ''
+        ]
+        nodes = [{
+            "id": concept_to_id_map[concept],
+            "label": concept,
+            "weight": self.__propagated_energy.get(concept, 0) * 150,
+            "x": positions_cache.get(concept_to_id_map[concept], {}).get("x", random.randint(0, 1000)),
+            "y": positions_cache.get(concept_to_id_map[concept], {}).get("y", random.randint(0, 1000)),
+        } for concept in self.graph.nodes_set if concept != '']
+        send_updates({
+            "nodes": nodes,
+            "edges": edges,
+        })
+
     def _add_energy(self, node: Hashable, energy: float, propagation: dict[float]):
         self.__propagated_energy[node] += energy
+
+        self._send_ws_data()
+
         if energy < 0.05:
             return
+        
+        breakpoint()
         
         # propagate energy to connected nodes
         iteration_limit = min(self.max_iterations, len(self.graph.priority_queues[node]))
@@ -115,6 +162,7 @@ class Graph:
         self.max_iterations = 100
         self.bidirectional = False
         self.sizes = {}
+        self.nodes_set = set()
 
         for edge in edges:
             self.update_edge(edge, 1.0)
@@ -124,6 +172,8 @@ class Graph:
         edge: Edge,
         weight: float, 
     ):
+        self.nodes_set.add(edge.start)
+        self.nodes_set.add(edge.end)
         # There can be multiple edges between the same nodes
         # in a case where two patterns with the same concept
         # have the same node at different positions.
@@ -228,3 +278,6 @@ class Graph:
             for x in sorted(result.items(), key=lambda x: x[1], reverse=True)[:10]
             if x[0] not in initial_nodes
         ]
+
+    def get_ws_data(self):
+        pass

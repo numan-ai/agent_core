@@ -6,6 +6,7 @@ from typing import Optional
 from dataclasses import dataclass, field
 
 from prototyping.grass_parser_v2.graph import Edge, Graph, NodeEnergyMap
+from prototyping.grass_parser_v2.server import start_server
 from src.knowledge_base.hierarchy import DictHierarchy
 
 
@@ -109,7 +110,7 @@ word_concepts = {
     "Word_brother": ["RelativeBrother"],
     "Word_home": ["Home"],
     "Word_is": ["IsBeing", "IsDoing"],
-    "Word_running": ["Activity", "Process"],
+    "Word_running": ["ProcessRunning", "ActivityRunning"],
     "Word_far": ["DistanceFar"],
     "Word_crane": ["CraneBird", "ConstructionCrane"],
     "Word_i": ["I", ],
@@ -349,6 +350,8 @@ class Tree:
         # if concepts == ['LivingEntity', 'Word_is', 'Word_running']:
         #     breakpoint()
 
+        breakpoint()
+
         res = g.lookup(
             *concepts,
             indices=indices,
@@ -457,6 +460,8 @@ class Tree:
 
         return None, None
 
+
+start_server()
 tree = Tree()
 for word in sentence:
     tree.add_word(word)
@@ -468,5 +473,5 @@ tree.run()
 
 print("DONE")
 
-breakpoint()
-pass
+# breakpoint()
+# pass
