@@ -85,10 +85,12 @@ class NodeEnergyMap:
         nodes = [{
             "id": concept_to_id_map[concept],
             "label": concept,
-            "weight": self.__propagated_energy.get(concept, 0) * 150,
+            "weight": (self.__propagated_energy[concept] + self.__energies_uncommitted[concept] + self.energies[concept]) * 30,
+            "energy": self.__propagated_energy[concept] + self.__energies_uncommitted[concept] + self.energies[concept],
             "x": positions_cache.get(concept_to_id_map[concept], {}).get("x", random.randint(0, 1000)),
             "y": positions_cache.get(concept_to_id_map[concept], {}).get("y", random.randint(0, 1000)),
         } for concept in self.graph.nodes_set if concept != '']
+
         send_updates({
             "nodes": nodes,
             "edges": edges,
@@ -101,8 +103,6 @@ class NodeEnergyMap:
 
         if energy < 0.05:
             return
-        
-        breakpoint()
         
         # propagate energy to connected nodes
         iteration_limit = min(self.max_iterations, len(self.graph.priority_queues[node]))
@@ -122,14 +122,20 @@ class NodeEnergyMap:
             self.__reverse_propagated_energy[node] -= energy
         
         for node, energy in self.__energies_uncommitted.items():
+            self.__energies_uncommitted[node] = 0.0
             self._reverse_propagate(node, energy, propagation)
 
         self.__energies_uncommitted.clear()
         self.__reverse_propagated_energy.clear()
 
+        self._send_ws_data()
+
     def _reverse_propagate(self, node: Hashable, energy: float, propagation: float = 1.0):
         self.energies[node] += energy
         self.__reverse_propagated_energy[node] += energy
+
+        self._send_ws_data()
+
         if energy < 0.05:
             return
         
@@ -257,7 +263,10 @@ class Graph:
                             mismatch_multiplier = 1.0
 
                         if is_true_pm is False:
-                            mismatch_multiplier *= 0.5
+                            if input_index == 0 or edge.index == 0:
+                                mismatch_multiplier = 1.0
+                            else:
+                                mismatch_multiplier *= 0.5
 
                         result[edge.end] += weight * mismatch_multiplier / self.sizes[edge.end]
 

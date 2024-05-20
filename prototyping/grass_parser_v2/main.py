@@ -90,7 +90,7 @@ patterns = [
     Pattern("NonLivingEntity", [
         "PossessivePronoun", "Home",
     ]),
-    Pattern("ConstructionSize", [
+    Pattern("ConstructionSite", [
         "Word_construction", "Word_site",
     ]),
     Pattern("EntityDidAction", [
@@ -145,7 +145,7 @@ hierarchy = DictHierarchy(children={
     "Process": ["ProcessRunning", ],
     "ActionPast": ["SawPastAction", ],
     "Action": ["ActionPast", ],
-    "LivingEntity": ["RelativeBrother", "I", ],
+    "LivingEntity": ["RelativeBrother", "I", "CraneBird"],
     "Entity": ["LivingEntity", "NonLivingEntity", "IndefiniteEntityReference"],
     "NonLivingEntity": ["ConstructionCrane", ],
 })
@@ -166,11 +166,11 @@ for pattern in patterns:
 
 
 energy_map = NodeEnergyMap(g)
-g.update_edge(Edge(
-    start="ConstructionSite",
-    end="ConstructionCrane",
-    type_name="associated",
-), 1.0)
+# g.update_edge(Edge(
+#     start="ConstructionSite",
+#     end="ConstructionCrane",
+#     type_name="associated",
+# ), 1.0)
 
 
 @dataclass
@@ -239,6 +239,9 @@ class Tree:
         res = self._make_lookup(idx, size, concepts, indices)
 
         if not res:
+            if self.tree_locations:
+                self.validation_stack.append(self.tree_locations[-1])
+            
             print("Can't expand, starting a new tree")
             self.tree_locations.append(idx)
             # if self.call_stack:
@@ -266,7 +269,11 @@ class Tree:
             if node not in hierarchy.get_parents(match.concept):
                 print('not equal!!')
                 if new_idx == idx:
+                    if self.tree_locations:
+                        self.validation_stack.append(self.tree_locations[-1])
+                    
                     self.call_stack.append((idx + size + 1, 0))
+                    self.tree_locations.append(idx)
                     # full mismatch
                     return
                 # on unsuccessful match go try matching further
@@ -314,8 +321,8 @@ class Tree:
                 print("Sucess, returning back")
                 return
             
-            if self.tree_locations:
-                self.validation_stack.append(self.tree_locations[-1])
+            # if self.tree_locations:
+            #     self.validation_stack.append(self.tree_locations[-1])
 
             print("Sucess, try expanding up")
             # on successful match go up+forward
@@ -329,8 +336,8 @@ class Tree:
         for word_idx in range(max(idx - 2, 0), min(len(self.layers[0]), idx + size + 1 + 2)):
             word_concept = self.layers[0][word_idx].concept
             emap.add_energy(word_concept, 0.3, propagation={
-                "pattern": 1.0,
-                "parent": 0.9,
+                "pattern": 0.8,
+                "parent": 1.0,
             }, commit=False)
             words.append(word_concept)
 
@@ -339,18 +346,24 @@ class Tree:
                 if match_concept is None:
                     continue
                 emap.add_energy(match_concept, 0.3, propagation={
-                    "pattern": 1.0,
-                    "parent": 0.9,
+                    "pattern": 0.8,
+                    "parent": 1.0,
                 }, commit=False)
+
+            # breakpoint()
+            # pass
         
         print('concepts', concepts)
+
+        # breakpoint()
+        
         emap.reverse_propagate(propagation=1.0)
         emap.energies[''] = 0
 
         # if concepts == ['LivingEntity', 'Word_is', 'Word_running']:
         #     breakpoint()
 
-        breakpoint()
+        # breakpoint()
 
         res = g.lookup(
             *concepts,
@@ -387,6 +400,20 @@ class Tree:
         current_idx = idx
 
         while current_idx <= idx + match.size:
+            if current_idx == idx:
+                found = False
+                for layer in reversed(self.layers):
+                    _match = layer[current_idx]
+                    if found:
+                        matches.append(_match)
+                        concepts.append(_match.concept)
+                        current_idx += _match.size
+                        break
+                    if match is _match:
+                        found = True
+                else:
+                    raise ValueError("No match found")
+                
             for layer in reversed(self.layers):
                 _match = layer[current_idx]
                 if current_idx == idx and match is not _match:
@@ -418,6 +445,8 @@ class Tree:
 
         if not res:
             breakpoint()
+
+        breakpoint()
 
         if res and res[0][0] != match.concept:
             for layer in reversed(self.layers):

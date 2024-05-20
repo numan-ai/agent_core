@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import queue
 import random
@@ -24,6 +25,7 @@ async def _send_updates():
         await asyncio.sleep(0.1)
 
     main_data = None
+    main_data_nodes = None
 
     while True:
         if updates.empty():
@@ -40,24 +42,29 @@ async def _send_updates():
 
         if main_data is None:
             main_data = data
+            main_data_nodes = copy.deepcopy(nodes)
 
+        need_update = False
         for node in main_data['nodes']:
-            diff = node['weight'] - nodes[node['id']]['weight']
-            node['weight'] -= diff * 0.2
-                
-        for client in client_list.copy():
-            try:
-                await client.send(json.dumps(main_data))
-            except websockets.exceptions.ConnectionClosedError:
-                client_list.remove(client)
-                print("Client disconnected")
-            except websockets.exceptions.ConnectionClosedOK:
-                client_list.remove(client)
-                print("Client disconnected")
+            expected = nodes[node['id']]['weight']
+            diff = node['weight'] - expected
+            if abs(diff) > 0.01:
+                node['weight'] -= diff * 0.2
+                need_update = True
+            node['label'] = f"{main_data_nodes[node['id']]['label']}\n{nodes[node['id']]['energy'] * 100:.0f}"
 
-        # print('sending')
-        await asyncio.sleep(0.05)
-        # evt.set()
+        if need_update:
+            for client in client_list.copy():
+                try:
+                    await client.send(json.dumps(main_data))
+                except websockets.exceptions.ConnectionClosedError:
+                    client_list.remove(client)
+                    print("Client disconnected")
+                except websockets.exceptions.ConnectionClosedOK:
+                    client_list.remove(client)
+                    print("Client disconnected")
+
+        await asyncio.sleep(0.02)
 
 
 async def handle_client(websocket, path):
