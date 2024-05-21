@@ -26,8 +26,6 @@ from src.knowledge_base.hierarchy import DictHierarchy
 
 # sentence = collected['DT+JJ+NN'][1]
 
-sentence = ["i", "saw", "a", "crane", "i", "saw"]
-# sentence = ["my", "brother", "is", "running"]
 # "on", "the", "construction", "site"]
 # breakpoint()
 
@@ -41,7 +39,8 @@ class Pattern:
 #     "Word_my", "Word_brother", "Word_is", "Word_running",
 #     # "Word_my", "Word_brother", "Word_is", "Word_far",
 # ]
-
+# sentence = ["i", "saw", "a", "crane", "i", "saw"]
+sentence = ["my", "brother", "is", "running"]
 sentence = [
     f"Word_{word}" for word in sentence
 ]
@@ -182,6 +181,12 @@ class Match:
 
     def __repr__(self) -> str:
         return f"Match({self.concept}, {self.size})"
+    
+    def __gt__(self, other):
+        # random order for the ambiguity priority queue
+        # we don't care which match is the first one 
+        # since they are both equally ambiguous
+        return hash(self) > hash(other)
 
 
 class Tree:
@@ -271,9 +276,12 @@ class Tree:
                 if new_idx == idx:
                     if self.tree_locations:
                         self.validation_stack.append(self.tree_locations[-1])
-                    
+
+                    if not self.call_stack:
+                        print('Adding new tree location', idx, self.call_stack)
+                        self.tree_locations.append(idx)
+
                     self.call_stack.append((idx + size + 1, 0))
-                    self.tree_locations.append(idx)
                     # full mismatch
                     return
                 # on unsuccessful match go try matching further
@@ -350,20 +358,13 @@ class Tree:
                     "parent": 1.0,
                 }, commit=False)
 
-            # breakpoint()
-            # pass
-        
         print('concepts', concepts)
 
-        # breakpoint()
-        
         emap.reverse_propagate(propagation=1.0)
         emap.energies[''] = 0
 
-        # if concepts == ['LivingEntity', 'Word_is', 'Word_running']:
-        #     breakpoint()
-
-        # breakpoint()
+        if concepts == ['Word_a', 'CraneBird', 'EntityDidAction']:
+            breakpoint()
 
         res = g.lookup(
             *concepts,
@@ -446,13 +447,13 @@ class Tree:
         if not res:
             breakpoint()
 
-        breakpoint()
-
         if res and res[0][0] != match.concept:
+            # reset this match and matches above
+            # TODO: also reset any matches that use this match in the higher layers
             for layer in reversed(self.layers):
                 _match = layer[idx]
                 if _match.concept is None:
-                    break
+                    continue
                 _match.concept = None
                 _match.children.clear()
                 if _match is match:
@@ -502,5 +503,5 @@ tree.run()
 
 print("DONE")
 
-# breakpoint()
-# pass
+breakpoint()
+pass

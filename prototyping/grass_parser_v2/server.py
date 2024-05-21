@@ -9,30 +9,31 @@ import websockets
         
 
 client_list = []
-updates = queue.Queue(maxsize=1)
+updates_emap = queue.Queue(maxsize=1)
+updates_lookup = queue.Queue(maxsize=1)
 
 
 with open("positions_cache.json", "r") as f:
     positions_cache = json.load(f)
 
 
-def send_updates(data):
-    updates.put(data)
-
-
-async def _send_updates():
+async def _send_updates(queue_type, queue):
     while not client_list:
         await asyncio.sleep(0.1)
 
     main_data = None
     main_data_nodes = None
+    last_data = None
+
+    while queue.empty():
+        await asyncio.sleep(0.1)
 
     while True:
-        if updates.empty():
+        if queue.empty():
             # await asyncio.sleep(0.1)
             data = last_data
         else:
-            data = updates.get()
+            data = queue.get()
             last_data = data
 
         nodes = {
@@ -42,6 +43,7 @@ async def _send_updates():
 
         if main_data is None:
             main_data = data
+            main_data['queue_type'] = queue_type
             main_data_nodes = copy.deepcopy(nodes)
 
         need_update = False
@@ -86,7 +88,8 @@ async def _start_server():
     print("Server started")
     await asyncio.gather(
         server.wait_closed(),
-        _send_updates(),
+        _send_updates("lookup", updates_lookup),
+        _send_updates("emap", updates_emap),
     )
 
 

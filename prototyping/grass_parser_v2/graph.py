@@ -6,7 +6,11 @@ import random
 from typing import Hashable, Optional
 from uuid import uuid4
 
-from prototyping.grass_parser_v2.server import send_updates, positions_cache
+from prototyping.grass_parser_v2.server import (
+    positions_cache,
+    updates_emap,
+    updates_lookup,
+)
 
 
 @dataclass(slots=True)
@@ -91,7 +95,7 @@ class NodeEnergyMap:
             "y": positions_cache.get(concept_to_id_map[concept], {}).get("y", random.randint(0, 1000)),
         } for concept in self.graph.nodes_set if concept != '']
 
-        send_updates({
+        updates_emap.put({
             "nodes": nodes,
             "edges": edges,
         })
@@ -99,7 +103,7 @@ class NodeEnergyMap:
     def _add_energy(self, node: Hashable, energy: float, propagation: dict[float]):
         self.__propagated_energy[node] += energy
 
-        self._send_ws_data()
+        # self._send_ws_data()
 
         if energy < 0.05:
             return
@@ -121,20 +125,20 @@ class NodeEnergyMap:
         for node, energy in self.__energies_uncommitted.items():
             self.__reverse_propagated_energy[node] -= energy
         
-        for node, energy in self.__energies_uncommitted.items():
+        for node, energy in self.__energies_uncommitted.copy().items():
             self.__energies_uncommitted[node] = 0.0
             self._reverse_propagate(node, energy, propagation)
 
         self.__energies_uncommitted.clear()
         self.__reverse_propagated_energy.clear()
 
-        self._send_ws_data()
+        # self._send_ws_data()
 
     def _reverse_propagate(self, node: Hashable, energy: float, propagation: float = 1.0):
         self.energies[node] += energy
         self.__reverse_propagated_energy[node] += energy
 
-        self._send_ws_data()
+        # self._send_ws_data()
 
         if energy < 0.05:
             return
@@ -206,6 +210,46 @@ class Graph:
         #     bisect.insort(self.priority_queues[end], (priority_weight, start, index))
         #     self.incoming_nodes[start].add(end)
 
+    def _send_ws_data(self, weights):
+        concept_to_id_map = {
+            concept: f"_{concept}"
+            for concept in self.nodes_set
+        }
+
+        for node in self.nodes_set:
+            node_id = concept_to_id_map[node]
+            if node_id not in positions_cache:
+                positions_cache[node_id] = {
+                    "x": random.randint(0, 1000),
+                    "y": random.randint(0, 1000),
+                }
+
+        edges = [
+            {
+                "source": concept_to_id_map[edge.start],
+                "target": concept_to_id_map[edge.end],
+                "label": str(edge.index) if edge.index != -1 else "",
+                "type": edge.type_name,
+                "weight": 10,
+            }
+            for pq in list(self.priority_queues.values())
+            for energy, edge in pq
+            if edge.start != '' and edge.end != ''
+        ]
+        nodes = [{
+            "id": concept_to_id_map[concept],
+            "label": concept,
+            "weight": weights[concept] * 30,
+            "energy": weights[concept],
+            "x": positions_cache.get(concept_to_id_map[concept], {}).get("x", random.randint(0, 1000)),
+            "y": positions_cache.get(concept_to_id_map[concept], {}).get("y", random.randint(0, 1000)),
+        } for concept in self.nodes_set if concept != '']
+
+        updates_lookup.put({
+            "nodes": nodes,
+            "edges": edges,
+        })
+
     def lookup(
         self, 
         *nodes,
@@ -229,6 +273,7 @@ class Graph:
             depth_decay = {}
         
         initial_nodes = set(nodes)
+        invalid_zero_index_results = set()
         
         result = defaultdict(float)
 
@@ -259,16 +304,24 @@ class Graph:
                                 # but don't skip the node propagation, 
                                 # since this pattern can be a transition
                                 mismatch_multiplier = 0.0
+                                invalid_zero_index_results.add(edge.end)
                         else:
                             mismatch_multiplier = 1.0
 
                         if is_true_pm is False:
                             if input_index == 0 or edge.index == 0:
-                                mismatch_multiplier = 1.0
+                                mismatch_multiplier = 0.0
+                                invalid_zero_index_results.add(edge.end)
                             else:
                                 mismatch_multiplier *= 0.5
 
-                        result[edge.end] += weight * mismatch_multiplier / self.sizes[edge.end]
+                        if edge.end in invalid_zero_index_results:
+                            mismatch_multiplier = 0.0
+
+                        _result = weight * mismatch_multiplier / self.sizes[edge.end]
+                        if _result != 0.0:
+                            result[edge.end] += _result
+                        # self._send_ws_data(result)
 
                     if edge.type_name in transition_edge_types:
                         new_nodes.append(edge.end)
