@@ -5,7 +5,7 @@ from prototyping.grass_parser_v2.graph import Edge, Graph, NodeEnergyMap
 
 
 nodes_num = 1000
-edges_num = 10000
+edges_num = 50000
 
 nodes = [
     str(uuid4())
@@ -19,18 +19,29 @@ g = Graph([
 
 emap = NodeEnergyMap(g)
 print('start')
-t1 = time.perf_counter_ns()
-for _ in range(4):
-    emap.add_energy(random.choice(nodes), 1.0, propagation=0.8, commit=False)
 
-t2 = time.perf_counter_ns()
+forward_time = 0
+backward_time = 0
+count = 100
 
-emap.reverse_propagate(propagation=0.7)
-t3 = time.perf_counter_ns()
+for i in range(count):
+    print(f"{i + 1} / {count}", end='\r')
+    t1 = time.perf_counter_ns()
+    for _ in range(4):
+        emap.add_energy(random.choice(nodes), 1.0, propagation={
+            "parent": 0.8
+        }, commit=False)
 
-print(edges_num)
-print('forward', (t2 - t1) / edges_num)
-print('backward', (t3 - t2) / edges_num)
+    t2 = time.perf_counter_ns()
+
+    emap.reverse_propagate(propagation=0.7)
+    t3 = time.perf_counter_ns()
+
+    forward_time += t2 - t1
+    backward_time += t3 - t2
+print()
+print('forward', int(forward_time / edges_num / count))
+print('backward', int(backward_time / edges_num / count))
 # g.lookup(
 #     *[random.choice(nodes) for _ in range(5)]
 # )
