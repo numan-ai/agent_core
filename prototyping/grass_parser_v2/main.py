@@ -1,5 +1,6 @@
 import bisect
 from collections import defaultdict
+import json
 import nltk
 
 from typing import Optional
@@ -99,12 +100,16 @@ patterns = [
         "LivingEntity", "ActionPast", "Entity",
     ]),
     Pattern("IndefiniteEntityReference", [
-        "IndefiniteArticleA", "Entity",
+        "A_IndefiniteArticle", "Entity",
     ]),
 ]
 
+with open('prototyping/grass_parser_v2/word_concept_cache2.json', 'r') as f:
+    known_tokens = json.load(f)['tokens']
+
+
 word_concepts = {
-    "Word_my": ["PossessivePronoun"],
+    "Word_my": ["My_PossessivePronoun"],
     "Word_hobby": ["Hobby"],
     "Word_brother": ["RelativeBrother"],
     "Word_home": ["Home"],
@@ -112,12 +117,15 @@ word_concepts = {
     "Word_running": ["ProcessRunning", "ActivityRunning"],
     "Word_far": ["DistanceFar"],
     "Word_crane": ["CraneBird", "ConstructionCrane"],
-    "Word_i": ["I", ],
+    "Word_i": ["I_SubjectivePronoun", ],
     "Word_saw": ["SawPastAction", "SawTool"],
-    "Word_a": ["IndefiniteArticleA", ],
-    "Word_the": ["DefiniteArticleThe", ],
-    "Word_on": ["OnPreposition", ],
+    "Word_a": ["A_IndefiniteArticle", ],
+    "Word_the": ["The_DefiniteArticle", ],
 }
+word_concepts.update({
+    token: concepts.keys()
+    for token, concepts in known_tokens.items()
+})
 
 for _word, _concepts in word_concepts.items():
     for _concept in _concepts:
@@ -139,15 +147,27 @@ pattern_map = {
     for pattern in patterns
 }
 
-hierarchy = DictHierarchy(children={
+children = {
     "Activity": ["ActivityRunning"],
     "Process": ["ProcessRunning", ],
     "ActionPast": ["SawPastAction", ],
     "Action": ["ActionPast", ],
-    "LivingEntity": ["RelativeBrother", "I", "CraneBird"],
+    "PossessivePronoun": ["My_PossessivePronoun", ],
+    "LivingEntity": ["RelativeBrother", "I_SubjectivePronoun", "CraneBird"],
     "Entity": ["LivingEntity", "NonLivingEntity", "IndefiniteEntityReference"],
     "NonLivingEntity": ["ConstructionCrane", ],
-})
+}
+for _concepts in known_tokens.values():
+    for concept in _concepts:
+        try:
+            parent = concept.split("_")[1]
+        except IndexError:
+            print(f"Skipping {concept}")
+            continue
+        children.setdefault(parent, [])
+        children[parent].append(concept)
+
+hierarchy = DictHierarchy(children=children)
 
 g = Graph([
     Edge(node, pattern.concept, "pattern", i)
@@ -226,7 +246,6 @@ class Tree:
                 current_idx += match.size
                 break
 
-            
         for _ in range(2):
             for layer in reversed(self.layers):
                 try:
@@ -491,7 +510,7 @@ class Tree:
         return None, None
 
 
-start_server()
+# start_server()
 tree = Tree()
 for word in sentence:
     tree.add_word(word)

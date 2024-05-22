@@ -1,0 +1,365 @@
+{
+    "sentences": [],
+    "tokens": {
+        "the ": {
+            "DefiniteDeterminantThe": [
+                1,
+                4
+            ]
+        },
+        "cat ": {
+            "Cat_Animal": [
+                0,
+                1
+            ]
+        },
+        "sleeps ": {
+            "Sleeps_Verb3rd": [
+                0,
+                2
+            ]
+        },
+        "on ": {
+            "On_Preposition": [
+                0,
+                3
+            ]
+        },
+        "warm ": {
+            "Warm_TemperatureDescription": [
+                0,
+                5
+            ]
+        },
+        "windowsill": {
+            "Windowsill_PhysicalEntity": [
+                0,
+                6
+            ]
+        },
+        ".": {
+            "Dot": [
+                2,
+                8
+            ]
+        },
+        "did ": {
+            "Did_QuestionInitiator": [
+                1,
+                0
+            ]
+        },
+        "you ": {
+            "You_SubjectivePronoun": [
+                5,
+                1
+            ]
+        },
+        "hear ": {
+            "Hear_VerbSimple": [
+                1,
+                2
+            ]
+        },
+        "that ": {
+            "That_Description": [
+                1,
+                3
+            ]
+        },
+        "loud ": {
+            "Loud_SoundLevel": [
+                1,
+                4
+            ]
+        },
+        "noise ": {
+            "Noise_AbstractConcept": [
+                1,
+                5
+            ]
+        },
+        "last ": {
+            "Last_Description": [
+                1,
+                6
+            ]
+        },
+        "night": {
+            "Night_PartOfDay": [
+                1,
+                7
+            ]
+        },
+        "?": {
+            "QuestionMark": [
+                1,
+                8
+            ]
+        },
+        "she ": {
+            "She_SubjectivePronoun": [
+                2,
+                0
+            ]
+        },
+        "quickly ": {
+            "Quickly_Description": [
+                2,
+                1
+            ]
+        },
+        "ran ": {
+            "Ran_VerbPast": [
+                2,
+                2
+            ]
+        },
+        "to ": {
+            "To_Preposition": [
+                3,
+                5
+            ]
+        },
+        "store ": {
+            "Store_PhysicalEntity": [
+                2,
+                5
+            ]
+        },
+        "before ": {
+            "Before_Conjunction": [
+                2,
+                6
+            ]
+        },
+        "it ": {
+            "It_SubjectivePronoun": [
+                2,
+                7
+            ]
+        },
+        "closed": {
+            "Closed_VerbPast": [
+                2,
+                8
+            ]
+        },
+        "tomorrow": {
+            "Tomorrow_Time": [
+                3,
+                0
+            ]
+        },
+        ", ": {
+            "Coma": [
+                3,
+                1
+            ]
+        },
+        "we ": {
+            "We_SubjectivePronoun": [
+                3,
+                2
+            ]
+        },
+        "are ": {
+            "Are_AuxVerb": [
+                3,
+                3
+            ]
+        },
+        "going ": {
+            "Going_VerbCont": [
+                3,
+                4
+            ]
+        },
+        "zoo": {
+            "Zoo_Location": [
+                3,
+                7
+            ]
+        },
+        "he ": {
+            "He_SubjectivePronoun": [
+                4,
+                0
+            ]
+        },
+        "can ": {
+            "Dot": [
+                5,
+                0
+            ]
+        },
+        "help ": {
+            "You_Pronoun": [
+                5,
+                2
+            ]
+        },
+        "often ": {
+            "Often_AdverbTime": [
+                0,
+                1
+            ]
+        },
+        "forgets ": {
+            "Forgets_Verb3rd": [
+                0,
+                2
+            ]
+        },
+        "his ": {
+            "His_PossessivePronoun": [
+                0,
+                3
+            ]
+        },
+        "keys": {
+            "Keys_PhysicalEntityPlural": [
+                0,
+                4
+            ]
+        },
+        "me ": {
+            "Me_ObjectivePronoun": [
+                0,
+                3
+            ]
+        },
+        "with ": {
+            "With_Preposition": [
+                0,
+                4
+            ]
+        },
+        "this ": {
+            "This_Description": [
+                0,
+                5
+            ]
+        },
+        "puzzle": {
+            "Puzzle_AbstractEntity": [
+                0,
+                6
+            ]
+        },
+        "sun ": {
+            "Sun_PhysicalEntity": [
+                0,
+                1
+            ]
+        },
+        "rises ": {
+            "Rises_Verb3rd": [
+                0,
+                2
+            ]
+        },
+        "early ": {
+            "Early_DescriptionTime": [
+                0,
+                3
+            ]
+        },
+        "in ": {
+            "In_Preposition": [
+                0,
+                4
+            ]
+        },
+        "summer": {
+            "Summer_TimeOfYear": [
+                0,
+                6
+            ]
+        },
+        "they ": {
+            "They_SubjectivePronoun": [
+                1,
+                0
+            ]
+        },
+        "were ": {
+            "Were_VerbPastPlural": [
+                1,
+                1
+            ]
+        },
+        "laughing ": {
+            "Laughing_VerbCont": [
+                1,
+                2
+            ]
+        },
+        "at ": {
+            "At_Preposition": [
+                1,
+                3
+            ]
+        },
+        "funny ": {
+            "Funny_Description": [
+                1,
+                5
+            ]
+        },
+        "movie": {
+            "Movie_Entity": [
+                1,
+                6
+            ]
+        },
+        "i ": {
+            "I_SubjectivePronoun": [
+                2,
+                0
+            ]
+        },
+        "have ": {
+            "Have_verb": [
+                2,
+                1
+            ]
+        },
+        "never ": {
+            "Never_DescriptionFrequency": [
+                2,
+                2
+            ]
+        },
+        "seen ": {
+            "Seen_VerbPastParticiple": [
+                2,
+                3
+            ]
+        },
+        "such ": {
+            "Such_Description": [
+                2,
+                4
+            ]
+        },
+        "a ": {
+            "IndefiniteArticleA": [
+                2,
+                5
+            ]
+        },
+        "beautiful ": {
+            "Beautiful_Description": [
+                2,
+                6
+            ]
+        },
+        "painting": {
+            "Painting_PhysicalEntity": [
+                2,
+                7
+            ]
+        }
+    }
+}

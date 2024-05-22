@@ -4,6 +4,28 @@ from uuid import uuid4
 from prototyping.grass_parser_v2.graph import Edge, Graph, NodeEnergyMap
 
 
+import bisect
+
+arr = [
+    (-random.random(), str(uuid4()))
+    for _ in range(10000)
+]
+
+arr = sorted(arr, key=lambda x: x[0])
+t1 = time.perf_counter()
+
+for _ in range(100000):
+    idx = bisect.insort(arr, (-0.5, ''))
+    
+
+t2 = time.perf_counter()
+print(t2 - t1)
+
+breakpoint()
+pass
+
+
+
 nodes_num = 1000
 edges_num = 50000
 

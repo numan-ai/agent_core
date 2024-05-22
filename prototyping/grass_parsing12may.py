@@ -1,6 +1,7 @@
 import bisect
 from collections import defaultdict
 from dataclasses import dataclass, field
+import json
 from typing import Hashable, Optional
 
 from src.knowledge_base.hierarchy import DictHierarchy
@@ -46,6 +47,10 @@ patterns = [
     # Pattern("P2", ["C", "A", "B"]),
 ]
 
+with open('prototyping/grass_parser_v2/word_concept_cache2.json', 'r') as f:
+    known_tokens = json.load(f)['tokens']
+    
+
 word_concepts = {
     "Word_my": ["PossessivePronoun"],
     "Word_hobby": ["Hobby"],
@@ -54,7 +59,11 @@ word_concepts = {
     "Word_is": ["IsBeing", "IsDoing"],
     "Word_running": ["Activity", "Process"],
     "Word_far": ["DistanceFar"],
+} + {
+    token: concepts.keys()
+    for token, concepts in known_tokens.items()
 }
+breakpoint()
 
 for _word, _concepts in word_concepts.items():
     for _concept in _concepts:
@@ -105,7 +114,7 @@ class NodeEnergyMap:
 
     def add_energy(self, node: Hashable, energy: float, decay: float = 0.75):
         self.energies[node] += energy
-        # TODO: propage energy to the connected nodes
+        # TODO: propagate energy to the connected nodes
 
     def get_energy(self, node: Hashable):
         return self.energies[node]

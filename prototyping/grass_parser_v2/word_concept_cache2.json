@@ -1,0 +1,949 @@
+{
+    "sentences": [
+        "tomorrow, we are going to the zoo.",
+        "he often forgets his keys.",
+        "can you help me with this puzzle?",
+        "the sun rises early in the summer.",
+        "they were laughing at the funny movie.",
+        "i have never seen such a beautiful painting.",
+        "birds fly south during the winter.",
+        "the cat jumps over the fence.",
+        "she will read her favorite book tomorrow.",
+        "they had walked to the park every sunday last year.",
+        "he eats an apple every morning for breakfast.",
+        "we are playing soccer in the yard now.",
+        "the sun sets behind the mountains, painting the sky orange.",
+        "she found an old coin while digging in the garden.",
+        "i have never seen such a beautiful rainbow before.",
+        "can you help me carry these heavy boxes?",
+        "the baby giggled as the dog licked her tiny feet.",
+        "the cat sleeps on the soft, blue pillow.",
+        "she will visit her grandmother next week.",
+        "can you see the bright stars in the sky tonight?",
+        "the boy quickly ran to catch the bus.",
+        "they were singing happily in the park yesterday.",
+        "a large tree grows near the small, quiet pond.",
+        "we enjoy playing soccer on sunny days.",
+        "he reads a new book every month.",
+        "the flowers bloom beautifully in the spring.",
+        "have you ever traveled to a foreign country?"
+    ],
+    "tokens": {
+        "tomorrow": {
+            "Tomorrow_AbstractConceptTimePoint": [
+                8,
+                -1
+            ]
+        },
+        "we": {
+            "We_SubjectivePronoun": [
+                23,
+                -1
+            ],
+            "We_Pronoun": [
+                11,
+                -1
+            ]
+        },
+        "are": {
+            "Are_Verb": [
+                0,
+                -1
+            ],
+            "Are_LinkVerb": [
+                11,
+                -1
+            ],
+            "Are_VerbPresent": [
+                11,
+                -1
+            ]
+        },
+        "going": {
+            "Going_Verb": [
+                0,
+                -1
+            ]
+        },
+        "to": {
+            "To_Preposition": [
+                26,
+                -1
+            ]
+        },
+        "the": {
+            "The_DefiniteDeterminer": [
+                25,
+                -1
+            ]
+        },
+        "zoo": {
+            "Zoo_PhysicalLocation": [
+                0,
+                -1
+            ]
+        },
+        "he": {
+            "He_SubjectivePronoun": [
+                24,
+                -1
+            ]
+        },
+        "often": {
+            "Often_AdverbFrequency": [
+                1,
+                -1
+            ]
+        },
+        "forgets": {
+            "Forgets_Verb3rd": [
+                1,
+                -1
+            ]
+        },
+        "his": {
+            "His_PossessivePronoun": [
+                1,
+                -1
+            ]
+        },
+        "keys": {
+            "Keys_PhysicalEntity": [
+                1,
+                -1
+            ]
+        },
+        "can": {
+            "Can_QuestionVerb": [
+                15,
+                -1
+            ]
+        },
+        "you": {
+            "You_Pronoun": [
+                26,
+                -1
+            ]
+        },
+        "help": {
+            "Help_Verb": [
+                15,
+                -1
+            ]
+        },
+        "me": {
+            "Me_ObjectivePronoun": [
+                15,
+                -1
+            ]
+        },
+        "with": {
+            "With_Preposition": [
+                2,
+                -1
+            ]
+        },
+        "this": {
+            "This_DemonstrativeDeterminer": [
+                2,
+                -1
+            ]
+        },
+        "puzzle": {
+            "Puzzle_AbstractConcept": [
+                2,
+                -1
+            ]
+        },
+        "sun": {
+            "Sun_PhysicalEntity": [
+                12,
+                -1
+            ],
+            "Sun_CelestialBody": [
+                12,
+                -1
+            ]
+        },
+        "rises": {
+            "Rises_Verb3rd": [
+                3,
+                -1
+            ]
+        },
+        "early": {
+            "Early_DescriptionTime": [
+                3,
+                -1
+            ]
+        },
+        "in": {
+            "In_Preposition": [
+                25,
+                -1
+            ]
+        },
+        "summer": {
+            "Summer_TimeOfYear": [
+                3,
+                -1
+            ]
+        },
+        "they": {
+            "They_Pronoun": [
+                21,
+                -1
+            ],
+            "They_SubjectivePronoun": [
+                9,
+                -1
+            ]
+        },
+        "were": {
+            "Were_Verb": [
+                4,
+                -1
+            ],
+            "Were_VerbPastPlural": [
+                21,
+                -1
+            ]
+        },
+        "laughing": {
+            "Laugh_Verb": [
+                4,
+                -1
+            ]
+        },
+        "at": {
+            "At_Preposition": [
+                4,
+                -1
+            ]
+        },
+        "funny": {
+            "Funny_DescriptionEmotion": [
+                4,
+                -1
+            ]
+        },
+        "movie": {
+            "Movie_AbstractConcept": [
+                4,
+                -1
+            ]
+        },
+        "i": {
+            "I_Pronoun": [
+                14,
+                -1
+            ],
+            "I_SubjectivePronoun": [
+                14,
+                -1
+            ]
+        },
+        "have": {
+            "Have_Verb": [
+                14,
+                -1
+            ],
+            "Have_VerbPresent": [
+                26,
+                -1
+            ]
+        },
+        "never": {
+            "Never_AdverbNegation": [
+                14,
+                -1
+            ],
+            "Never_AdverbTime": [
+                14,
+                -1
+            ]
+        },
+        "seen": {
+            "See_Verb": [
+                5,
+                -1
+            ],
+            "Seen_VerbPast": [
+                14,
+                -1
+            ]
+        },
+        "such": {
+            "Such_Determiner": [
+                5,
+                -1
+            ],
+            "Such_DemonstrativeDeterminer": [
+                14,
+                -1
+            ]
+        },
+        "a": {
+            "A_IndefiniteDeterminer": [
+                26,
+                -1
+            ]
+        },
+        "beautiful": {
+            "Beautiful_DescriptionAppearance": [
+                14,
+                -1
+            ],
+            "Beautiful_Description": [
+                14,
+                -1
+            ],
+            "Beautiful_DescriptionBeauty": [
+                14,
+                -1
+            ]
+        },
+        "painting": {
+            "Painting_PhysicalEntity": [
+                5,
+                -1
+            ],
+            "Painting_VerbPresentParticiple": [
+                12,
+                -1
+            ]
+        },
+        "birds": {
+            "Birds_PhysicalEntity": [
+                6,
+                -1
+            ]
+        },
+        "fly": {
+            "Fly_Verb": [
+                6,
+                -1
+            ]
+        },
+        "south": {
+            "South_GeographicalLocation": [
+                6,
+                -1
+            ]
+        },
+        "during": {
+            "During_Preposition": [
+                6,
+                -1
+            ]
+        },
+        "winter": {
+            "Winter_TimeOfYear": [
+                6,
+                -1
+            ]
+        },
+        "cat": {
+            "Cat_PhysicalEntity": [
+                17,
+                -1
+            ]
+        },
+        "jumps": {
+            "Jumps_Verb3rd": [
+                7,
+                -1
+            ]
+        },
+        "over": {
+            "Over_Preposition": [
+                7,
+                -1
+            ]
+        },
+        "fence": {
+            "Fence_PhysicalEntity": [
+                7,
+                -1
+            ]
+        },
+        "she": {
+            "She_SubjectivePronoun": [
+                18,
+                -1
+            ]
+        },
+        "will": {
+            "Will_VerbFuture": [
+                8,
+                -1
+            ],
+            "Will_HelpingVerb": [
+                8,
+                -1
+            ],
+            "Will_FutureAuxiliary": [
+                8,
+                -1
+            ],
+            "Will_FutureAuxiliaryVerb": [
+                18,
+                -1
+            ]
+        },
+        "read": {
+            "Read_Verb": [
+                8,
+                -1
+            ],
+            "Read_VerbInfinitive": [
+                8,
+                -1
+            ],
+            "Read_VerbFuture": [
+                8,
+                -1
+            ]
+        },
+        "her": {
+            "Her_PossessivePronoun": [
+                18,
+                -1
+            ],
+            "Her_ObjectivePronoun": [
+                16,
+                -1
+            ]
+        },
+        "favorite": {
+            "Favorite_DescriptionPreference": [
+                8,
+                -1
+            ]
+        },
+        "book": {
+            "Book_PhysicalEntity": [
+                24,
+                -1
+            ]
+        },
+        "had": {
+            "Had_VerbPast": [
+                9,
+                -1
+            ]
+        },
+        "walked": {
+            "Walked_VerbPast": [
+                9,
+                -1
+            ]
+        },
+        "park": {
+            "Park_PhysicalLocation": [
+                21,
+                -1
+            ]
+        },
+        "every": {
+            "Every_DescriptionFrequency": [
+                24,
+                -1
+            ],
+            "Every_AdverbFrequency": [
+                10,
+                -1
+            ]
+        },
+        "sunday": {
+            "Sunday_DayOfWeek": [
+                9,
+                -1
+            ]
+        },
+        "last": {
+            "Last_DescriptionOrder": [
+                9,
+                -1
+            ]
+        },
+        "year": {
+            "Year_AbstractConceptTimeUnit": [
+                9,
+                -1
+            ]
+        },
+        "eats": {
+            "Eats_Verb3rd": [
+                10,
+                -1
+            ]
+        },
+        "an": {
+            "An_IndefiniteDeterminer": [
+                13,
+                -1
+            ]
+        },
+        "apple": {
+            "Apple_PhysicalEntity": [
+                10,
+                -1
+            ]
+        },
+        "morning": {
+            "Morning_TimeOfDay": [
+                10,
+                -1
+            ]
+        },
+        "for": {
+            "For_Preposition": [
+                10,
+                -1
+            ]
+        },
+        "breakfast": {
+            "Breakfast_AbstractConceptMeal": [
+                10,
+                -1
+            ]
+        },
+        "playing": {
+            "Playing_VerbPresent": [
+                11,
+                -1
+            ],
+            "Playing_VerbPresentParticiple": [
+                23,
+                -1
+            ]
+        },
+        "soccer": {
+            "Soccer_PhysicalEntity": [
+                23,
+                -1
+            ]
+        },
+        "yard": {
+            "Yard_PhysicalLocation": [
+                11,
+                -1
+            ]
+        },
+        "now": {
+            "Now_AbstractConceptTimePoint": [
+                11,
+                -1
+            ]
+        },
+        "sets": {
+            "Sets_Verb3rd": [
+                12,
+                -1
+            ]
+        },
+        "behind": {
+            "Behind_Preposition": [
+                12,
+                -1
+            ]
+        },
+        "mountains": {
+            "Mountains_PhysicalEntityPlural": [
+                12,
+                -1
+            ]
+        },
+        "sky": {
+            "Sky_PhysicalEntity": [
+                19,
+                -1
+            ]
+        },
+        "orange": {
+            "Orange_DescriptionColor": [
+                12,
+                -1
+            ]
+        },
+        "found": {
+            "Found_VerbPast": [
+                13,
+                -1
+            ]
+        },
+        "old": {
+            "Old_DescriptionAge": [
+                13,
+                -1
+            ]
+        },
+        "coin": {
+            "Coin_PhysicalEntity": [
+                13,
+                -1
+            ]
+        },
+        "while": {
+            "While_Preposition": [
+                13,
+                -1
+            ],
+            "While_Conjunction": [
+                13,
+                -1
+            ]
+        },
+        "digging": {
+            "Digging_VerbPresentParticiple": [
+                13,
+                -1
+            ]
+        },
+        "garden": {
+            "Garden_PhysicalLocation": [
+                13,
+                -1
+            ]
+        },
+        "rainbow": {
+            "Rainbow_PhysicalEntity": [
+                14,
+                -1
+            ]
+        },
+        "before": {
+            "Before_Preposition": [
+                14,
+                -1
+            ]
+        },
+        "carry": {
+            "Carry_Verb": [
+                15,
+                -1
+            ]
+        },
+        "these": {
+            "These_DemonstrativeDeterminer": [
+                15,
+                -1
+            ]
+        },
+        "heavy": {
+            "Heavy_DescriptionWeight": [
+                15,
+                -1
+            ]
+        },
+        "boxes": {
+            "Boxes_PhysicalEntityPlural": [
+                15,
+                -1
+            ]
+        },
+        "baby": {
+            "Baby_Human": [
+                16,
+                -1
+            ]
+        },
+        "giggled": {
+            "Giggled_VerbPast": [
+                16,
+                -1
+            ]
+        },
+        "as": {
+            "As_Conjunction": [
+                16,
+                -1
+            ],
+            "As_Preposition": [
+                16,
+                -1
+            ]
+        },
+        "dog": {
+            "Dog_Animal": [
+                16,
+                -1
+            ]
+        },
+        "licked": {
+            "Licked_VerbPast": [
+                16,
+                -1
+            ]
+        },
+        "tiny": {
+            "Tiny_DescriptionSize": [
+                16,
+                -1
+            ]
+        },
+        "feet": {
+            "Feet_BodyPart": [
+                16,
+                -1
+            ],
+            "Feet_PhysicalEntityPlural": [
+                16,
+                -1
+            ]
+        },
+        "sleeps": {
+            "Sleep_Verb3rd": [
+                17,
+                -1
+            ]
+        },
+        "on": {
+            "On_Preposition": [
+                23,
+                -1
+            ]
+        },
+        "soft": {
+            "Soft_DescriptionTexture": [
+                17,
+                -1
+            ]
+        },
+        "blue": {
+            "Blue_DescriptionColor": [
+                17,
+                -1
+            ]
+        },
+        "pillow": {
+            "Pillow_PhysicalEntity": [
+                17,
+                -1
+            ]
+        },
+        "visit": {
+            "Visit_VerbInfinitive": [
+                18,
+                -1
+            ]
+        },
+        "grandmother": {
+            "Grandmother_PhysicalEntity": [
+                18,
+                -1
+            ]
+        },
+        "next": {
+            "Next_DescriptionOrder": [
+                18,
+                -1
+            ]
+        },
+        "week": {
+            "Week_AbstractConceptTimeUnit": [
+                18,
+                -1
+            ]
+        },
+        "see": {
+            "See_Verb": [
+                19,
+                -1
+            ]
+        },
+        "bright": {
+            "Bright_DescriptionBrightness": [
+                19,
+                -1
+            ]
+        },
+        "stars": {
+            "Stars_PhysicalEntityPlural": [
+                19,
+                -1
+            ]
+        },
+        "tonight": {
+            "Tonight_AbstractConceptTimePoint": [
+                19,
+                -1
+            ]
+        },
+        "boy": {
+            "Boy_PhysicalEntity": [
+                20,
+                -1
+            ]
+        },
+        "quickly": {
+            "Quickly_AdverbSpeed": [
+                20,
+                -1
+            ]
+        },
+        "ran": {
+            "Ran_VerbPast": [
+                20,
+                -1
+            ]
+        },
+        "catch": {
+            "Catch_VerbInfinitive": [
+                20,
+                -1
+            ]
+        },
+        "bus": {
+            "Bus_PhysicalEntity": [
+                20,
+                -1
+            ]
+        },
+        "singing": {
+            "Sing_VerbPastParticiple": [
+                21,
+                -1
+            ]
+        },
+        "happily": {
+            "Happily_AdverbManner": [
+                21,
+                -1
+            ]
+        },
+        "yesterday": {
+            "Yesterday_DescriptionTime": [
+                21,
+                -1
+            ]
+        },
+        "large": {
+            "Large_DescriptionSize": [
+                22,
+                -1
+            ]
+        },
+        "tree": {
+            "Tree_PhysicalEntity": [
+                22,
+                -1
+            ]
+        },
+        "grows": {
+            "Grow_Verb3rd": [
+                22,
+                -1
+            ]
+        },
+        "near": {
+            "Near_Preposition": [
+                22,
+                -1
+            ]
+        },
+        "small": {
+            "Small_DescriptionSize": [
+                22,
+                -1
+            ]
+        },
+        "quiet": {
+            "Quiet_DescriptionVolume": [
+                22,
+                -1
+            ]
+        },
+        "pond": {
+            "Pond_PhysicalEntity": [
+                22,
+                -1
+            ]
+        },
+        "enjoy": {
+            "Enjoy_VerbPresent": [
+                23,
+                -1
+            ]
+        },
+        "sunny": {
+            "Sunny_DescriptionWeather": [
+                23,
+                -1
+            ]
+        },
+        "days": {
+            "Days_AbstractConceptTimeUnitPlural": [
+                23,
+                -1
+            ]
+        },
+        "reads": {
+            "Reads_Verb3rd": [
+                24,
+                -1
+            ]
+        },
+        "new": {
+            "New_DescriptionNovelty": [
+                24,
+                -1
+            ]
+        },
+        "month": {
+            "Month_AbstractConceptTimeUnit": [
+                24,
+                -1
+            ]
+        },
+        "flowers": {
+            "Flowers_PhysicalEntityPlural": [
+                25,
+                -1
+            ]
+        },
+        "bloom": {
+            "Bloom_Verb3rd": [
+                25,
+                -1
+            ]
+        },
+        "beautifully": {
+            "Beautifully_Adverb": [
+                25,
+                -1
+            ]
+        },
+        "spring": {
+            "Spring_TimeOfYear": [
+                25,
+                -1
+            ]
+        },
+        "ever": {
+            "Ever_AdverbTime": [
+                26,
+                -1
+            ]
+        },
+        "traveled": {
+            "Traveled_VerbPast": [
+                26,
+                -1
+            ]
+        },
+        "foreign": {
+            "Foreign_DescriptionNationality": [
+                26,
+                -1
+            ]
+        },
+        "country": {
+            "Country_PhysicalLocation": [
+                26,
+                -1
+            ]
+        }
+    }
+}

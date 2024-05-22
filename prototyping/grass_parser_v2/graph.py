@@ -4,7 +4,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 import random
 from typing import Hashable, Optional
-from uuid import uuid4
 
 from prototyping.grass_parser_v2.server import (
     positions_cache,
@@ -327,7 +326,24 @@ class Graph:
                         new_nodes.append(edge.end)
                         _depth_decay = depth_decay.get(edge.type_name, 0.0)
                         new_weights.append(input_weight * (1 - _depth_decay))
-                        new_indices.append(input_index)
+                        # imagine this situation:
+                        # we are trying to parse this: A B C
+                        # There are two patterns:
+                        # P1: B+C
+                        # P2: A+P1
+                        # given the initial input we want to fetch P2
+                        # what should be the propagated index for B and C?
+                        # For A it's easy - it's 0.
+                        # For B it is initially 1, but since we go through P1
+                        # we need to specify what index P1 will have inside P2
+                        # and it's 1.
+                        # Same logic applies to C, it's initially 2, but we
+                        # need to propagate 1.
+                        # This is why we subtract edge.index from input_index
+                        # But this will only work indices that are directly
+                        # after the projected (ghost) concept.
+                        new_input_index = input_index - edge.index
+                        new_indices.append(new_input_index)
                         new_true_pattern_match.append(is_true_pm and edge.type_name != 'pattern')
 
             nodes = new_nodes
